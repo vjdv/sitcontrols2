@@ -1,0 +1,77 @@
+{
+  "name": "sitcontrols2",
+  "version": "2.0.0",
+  "description": "Provides form controls with a friendly interface",
+  "main": "build/index.js",
+  "module": "build/index.module.js",
+  "scripts": {
+    "build": "rollup -c rollup.config.babel.js",
+    "watch": "rollup -c rollup.config.babel.js --format iife -w",
+    "examples:build": "cd \"./examples\" && \"./node_modules/.bin/webpack\"",
+    "examples:watch": "cd \"./examples\" && \"./node_modules/.bin/webpack-dev-server\"",
+    "start": "(npm run watch & npm run examples:watch)",
+    "test": "jest --no-cache"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vjdv/sitcontrols.git"
+  },
+  "keywords": [
+    "react",
+    "control",
+    "input",
+    "select",
+    "datepicker",
+    "monthpicker"
+  ],
+  "author": "Jassiel",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/vjdv/sitcontrols/issues"
+  },
+  "homepage": "https://github.com/vjdv/sitcontrols#readme",
+  "devDependencies": {
+    "@babel/core": "^7.2.2",
+    "@babel/plugin-external-helpers": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.0.0",
+    "@babel/plugin-proposal-decorators": "^7.0.0",
+    "@babel/plugin-proposal-export-namespace-from": "^7.0.0",
+    "@babel/plugin-proposal-function-sent": "^7.0.0",
+    "@babel/plugin-proposal-json-strings": "^7.0.0",
+    "@babel/plugin-proposal-numeric-separator": "^7.0.0",
+    "@babel/plugin-proposal-throw-expressions": "^7.0.0",
+    "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+    "@babel/plugin-syntax-import-meta": "^7.0.0",
+    "@babel/preset-env": "^7.0.0",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/register": "^7.0.0",
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-jest": "^23.4.2",
+    "classnames": "^2.2.5",
+    "css-loader": "^0.28.9",
+    "jest": "^22.4.0",
+    "node-sass": "^4.11.0",
+    "postcss-scss": "^1.0.3",
+    "react-test-renderer": "^16.7.0",
+    "rollup": "^0.68.2",
+    "rollup-plugin-babel": "^4.1.0",
+    "rollup-plugin-commonjs": "^9.2.0",
+    "rollup-plugin-node-resolve": "^4.0.0",
+    "rollup-plugin-postcss": "^1.6.3",
+    "rollup-plugin-replace": "^2.1.0",
+    "rollup-plugin-serve": "^0.6.1",
+    "rollup-watch": "^4.3.1",
+    "style-loader": "^0.22.1"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.8",
+    "@fortawesome/free-regular-svg-icons": "^5.5.0",
+    "@fortawesome/free-solid-svg-icons": "^5.5.0",
+    "@fortawesome/react-fontawesome": "0.1.0-11",
+    "prop-types": "^15.6.2",
+    "react": "^16.7.0",
+    "react-dom": "^16.7.0",
+    "react-fontawesome": "^1.6.1",
+    "react-virtualized": "^9.21.0"
+  }
+}
