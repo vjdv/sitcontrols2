@@ -1,0 +1,45 @@
+$hover: #f0f0f0;
+.sitcontrol_calendar {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #aeaeae;
+  border-radius: 0.3rem;
+  display: inline-block;
+  position: relative;
+  .sitcontrol_day {
+    cursor: pointer;
+    color: #000;
+    display: inline-block;
+    width: 1.7rem;
+    line-height: 1.7rem;
+    text-align: center;
+    margin: 0.166rem;
+  }
+  .sitcontrol_week {
+    white-space: nowrap;
+  }
+  .sitcontrol_header {
+    text-align: center;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #aeaeae;
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
+    padding-top: 8px;
+    position: relative;
+    .sitcontrol_title {
+      margin-top: 0;
+      color: #000;
+      font-weight: bold;
+      font-size: 0.944rem;
+    }
+  }
+  .sitcontrol_month {
+    margin: 0.4rem;
+    text-align: center;
+    .sitcontrol_day {
+      cursor: pointer;
+    }
+  }
+}
