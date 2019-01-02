@@ -6,7 +6,7 @@
   "module": "build/index.module.js",
   "scripts": {
     "build": "rollup -c rollup.config.babel.js",
-    "watch": "rollup -c rollup.config.babel.js --format iife -w",
+    "watch": "rollup -c rollup.config.babel.js -w",
     "examples:build": "cd \"./examples\" && \"./node_modules/.bin/webpack\"",
     "examples:watch": "cd \"./examples\" && \"./node_modules/.bin/webpack-dev-server\"",
     "start": "(npm run watch & npm run examples:watch)",
