@@ -9,13 +9,24 @@ $hover: #f0f0f0;
   display: inline-block;
   position: relative;
   .sitcontrol_day {
-    cursor: pointer;
     color: #000;
     display: inline-block;
     width: 1.7rem;
     line-height: 1.7rem;
     text-align: center;
     margin: 0.166rem;
+    border-radius: 0.3rem;
+    &:hover {
+      background-color: #f0f0f0;
+    }
+    &.picked {
+      background-color: #2a87d0;
+      color: #fff;
+    }
+    &.selected {
+      background-color: #216ba5;
+      color: #fff;
+    }
   }
   .sitcontrol_week {
     white-space: nowrap;
