@@ -1,4 +1,3 @@
-$hover: #f0f0f0;
 .sitcontrol_calendar {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 0.8rem;
@@ -8,6 +7,7 @@ $hover: #f0f0f0;
   border-radius: 0.3rem;
   display: inline-block;
   position: relative;
+  user-select: none;
   .sitcontrol_day {
     color: #000;
     display: inline-block;
@@ -44,6 +44,24 @@ $hover: #f0f0f0;
       color: #000;
       font-weight: bold;
       font-size: 0.944rem;
+      position: relative;
+      .sitcontrol_left,
+      .sitcontrol_right {
+        cursor: pointer;
+        position: absolute;
+        font-size: 1.1rem;
+        line-height: 1.1rem;
+        color: #888;
+        &:hover {
+          color: #111;
+        }
+      }
+      .sitcontrol_left {
+        left: 0.5rem;
+      }
+      .sitcontrol_right {
+        right: 0.5rem;
+      }
     }
   }
   .sitcontrol_month {
@@ -51,6 +69,33 @@ $hover: #f0f0f0;
     text-align: center;
     .sitcontrol_day {
       cursor: pointer;
+    }
+  }
+  .sitcontrol_year {
+    margin: 0.4rem;
+    text-align: center;
+    width: 12rem;
+    .sitcontrol_month2 {
+      cursor: pointer;
+      color: #000;
+      display: inline-block;
+      width: 3.5rem;
+      font-size: 1.2rem;
+      line-height: 1.7rem;
+      text-align: center;
+      margin: 0.166rem;
+      border-radius: 0.3rem;
+      &:hover {
+        background-color: #f0f0f0;
+      }
+      &.picked {
+        background-color: #2a87d0;
+        color: #fff;
+      }
+      &.selected {
+        background-color: #216ba5;
+        color: #fff;
+      }
     }
   }
 }

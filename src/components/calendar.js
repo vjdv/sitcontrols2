@@ -2,7 +2,7 @@ import React from "react";
 import cx from "classnames";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { addDays, addMonths, addYears, getDate } from "./util";
+import { addDays, addMonths, addYears, getDate, dayEquals } from "./../utils/date";
 
 export default class Calendar extends React.Component {
   constructor(props) {
@@ -18,6 +18,7 @@ export default class Calendar extends React.Component {
     };
     this.days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
     this.state = { value: getDate(props.defaultValue, props.format), index: 0 };
+    if (props.value !== undefined) this.state.value = getDate(props.value, props.format);
     this.state.selection = this.state.value;
   }
   render() {
@@ -27,13 +28,13 @@ export default class Calendar extends React.Component {
     var style = { width: this.props.width };
     Object.assign(style, this.props.style);
     return (
-      <div tabIndex="0" className={"sitcontrol_calendar " + (this.state.index === 0 ? "pickday" : "pickmonth")} onKeyUp={this.keyHandler}>
+      <div ref={o => (this.root = o)} tabIndex="0" className={"sitcontrol_calendar " + (this.state.index === 0 ? "pickday" : "pickmonth")} onKeyUp={this.keyHandler}>
         {this.state.index === 0 ? (
           <div className="sitcontrol_header">
             <div className="sitcontrol_title">
-              <FontAwesomeIcon className="angle left" icon="angle-left" onClick={e => this.setState({ selection: addMonths(selection, -1) })} />
+              <FontAwesomeIcon className="sitcontrol_left" icon="caret-left" onClick={e => this.setState({ selection: addMonths(selection, -1) })} />
               <span onClick={this.showMonths}>{months[selection.getMonth()] + " " + selection.getFullYear()}</span>
-              <FontAwesomeIcon className="angle right" icon="angle-right" onClick={e => this.setState({ selection: addMonths(selection, 1) })} />
+              <FontAwesomeIcon className="sitcontrol_right" icon="caret-right" onClick={e => this.setState({ selection: addMonths(selection, 1) })} />
             </div>
             <div className="sitcontrol_week">
               {daysofweek.map((o, i) => (
@@ -44,44 +45,66 @@ export default class Calendar extends React.Component {
             </div>
           </div>
         ) : (
-          <div>
-            <FontAwesomeIcon className="angle left" icon="angle-left" onClick={e => this.setState({ selection: addYears(selection, -1) })} />
-            {this.state.selectionYear}
-            <FontAwesomeIcon className="angle right" icon="angle-right" onClick={e => this.setState({ selection: addYears(selection, 1) })} />
+          <div className="sitcontrol_header">
+            <div className="sitcontrol_title">
+              <FontAwesomeIcon className="sitcontrol_left" icon="caret-left" onClick={e => this.setState({ selection: addYears(selection, -1) })} />
+              {selection.getFullYear()}
+              <FontAwesomeIcon className="sitcontrol_right" icon="caret-right" onClick={e => this.setState({ selection: addYears(selection, 1) })} />
+            </div>
           </div>
         )}
         {this.state.index === 0 ? (
-          <div className="sitcontrol_month" onClick={this.selectValue}>
+          <div className="sitcontrol_month" onClick={this.selectDay}>
             {this.renderWeeks()}
           </div>
         ) : (
-          <ul onClick={this.selectValue}>
-            {months.map((y, i) => (
-              <li className={this.state.month === i + 1 && this.state.selectionYear === this.state.year ? "selected" : undefined} data-value={i + 1} key={i}>
-                {y.substring(0, 3)}
-              </li>
+          <div className="sitcontrol_year" onClick={this.selectMonth}>
+            {months.map((o, i) => (
+              <div
+                className={cx("sitcontrol_month2", selection.getMonth() === i && "picked", value.getMonth() === i && value.getFullYear() === selection.getFullYear() && "selected")}
+                data-value={i}
+                key={i}
+              >
+                {o.substring(0, 3)}
+              </div>
             ))}
-            <br style={{ clear: "both" }} />
-          </ul>
+          </div>
         )}
       </div>
     );
   }
+  componentDidMount() {
+    if (this.props.autoFocus) this.root.focus();
+  }
   keyHandler = e => {
     const key = e.keyCode;
+    if (key !== 13 && !(key >= 33 && key <= 40)) return;
     e.preventDefault();
-    if (!(key >= 33 && key <= 40)) return;
-    this.setState(newstate => {
-      if (key === 33) newstate.selection = addMonths(newstate.selection, -1);
-      else if (key === 34) newstate.selection = addMonths(newstate.selection, 1);
-      else if (key === 35) newstate.selection = addYears(newstate.selection, 1);
-      else if (key === 36) newstate.selection = addYears(newstate.selection, -1);
-      else if (key === 37) newstate.selection = addDays(newstate.selection, -1);
-      else if (key === 38) newstate.selection = addDays(newstate.selection, -7);
-      else if (key === 39) newstate.selection = addDays(newstate.selection, 1);
-      else if (key === 40) newstate.selection = addDays(newstate.selection, 7);
-      return newstate;
-    });
+    var oldValue = this.state.value;
+    var newValue = oldValue;
+    this.setState(
+      newstate => {
+        if (newstate.index === 1 && key === 37) newstate.selection = addMonths(newstate.selection, -1);
+        else if (newstate.index === 1 && key === 38) newstate.selection = addMonths(newstate.selection, -3);
+        else if (newstate.index === 1 && key === 39) newstate.selection = addMonths(newstate.selection, 1);
+        else if (newstate.index === 1 && key === 40) newstate.selection = addMonths(newstate.selection, 3);
+        else if (key === 33) newstate.selection = addMonths(newstate.selection, -1);
+        else if (key === 34) newstate.selection = addMonths(newstate.selection, 1);
+        else if (key === 35) newstate.selection = addYears(newstate.selection, 1);
+        else if (key === 36) newstate.selection = addYears(newstate.selection, -1);
+        else if (key === 37) newstate.selection = addDays(newstate.selection, -1);
+        else if (key === 38) newstate.selection = addDays(newstate.selection, -7);
+        else if (key === 39) newstate.selection = addDays(newstate.selection, 1);
+        else if (key === 40) newstate.selection = addDays(newstate.selection, 7);
+        else if (newstate.index === 1 && key === 13) newstate.index = 0;
+        else if (key === 13) newstate.value = newstate.selection;
+        newValue = newstate.value;
+        return newstate;
+      },
+      () => {
+        if (!dayEquals(oldValue, newValue) && this.props.onChange !== undefined) this.props.onChange({ target: this, oldValue, newValue });
+      }
+    );
   };
   calculateDayOfWeek(y, m, d) {
     const t = [0, 3, 2, 5, 0, 3, 5, 1, 4, 6, 2, 4];
@@ -119,35 +142,40 @@ export default class Calendar extends React.Component {
     const array = [];
     for (var i = from; i <= to; i++)
       array.push(
-        <div key={i} className={cx("sitcontrol_day", this.state.selection.getDate() === i && "picked")}>
+        <div
+          key={i}
+          className={cx(
+            "sitcontrol_day",
+            this.state.selection.getDate() === i && "picked",
+            this.state.value.getFullYear() === this.state.selection.getFullYear() && this.state.value.getMonth() === this.state.selection.getMonth() && this.state.value.getDate() === i && "selected"
+          )}
+          data-value={i}
+        >
           {i}
         </div>
       );
     return array;
   }
-  selectValue = e => {
-    if (e.target.nodeName !== "LI") return;
-    const value = e.target.dataset.value;
-    if (value === undefined) return;
-    if (this.state.index === 0) {
-      this.setState({ show: false, year: this.state.selectionYear, month: this.state.selectionMonth, day: Number(value) });
-    } else if (this.state.index === 1) {
-      this.setState({ index: 0, selectionMonth: Number(value) });
-    }
+  selectDay = e => {
+    const dayvalue = e.target.dataset.value;
+    if (dayvalue === undefined) return;
+    const oldValue = new Date(this.state.value);
+    const newValue = new Date(oldValue);
+    newValue.setDate(Number(dayvalue));
+    this.setState({ value: newValue }, () => {
+      if (!dayEquals(oldValue, newValue) && this.props.onChange !== undefined) this.props.onChange({ target: this, oldValue, newValue });
+    });
+  };
+  selectMonth = e => {
+    const monthvalue = e.target.dataset.value;
+    if (monthvalue === undefined) return;
+    const newSelection = new Date(this.state.selection);
+    newSelection.setMonth(Number(monthvalue));
+    this.setState({ selection: newSelection, index: 0 });
   };
   static getDerivedStateFromProps(props, prevstate) {
     const newstate = {};
-    console.log("x");
-    if (props.value !== undefined) {
-      var y = props.value.substring(0, 4);
-      var m = props.value.substring(5, 7);
-      var d = props.value.substring(8, 10);
-      newstate.year = Number(y);
-      newstate.month = Number(m);
-      newstate.day = Number(d);
-      console.log("y");
-    }
-    console.log(newstate);
+    if (props.value !== undefined) newstate.value = getDate(props.value, props.format);
     return newstate;
   }
 }
@@ -157,11 +185,13 @@ Calendar.defaultProps = {
   defaultValue: new Date(),
   onChange: () => {},
   lang: (navigator.language || navigator.userLanguage || "en").substring(0, 2),
-  format: "yyyy-mm-dd"
+  format: "yyyy-mm-dd",
+  autoFocus: false
 };
 
 Calendar.propTypes = {
   value: PropTypes.any,
   onChange: PropTypes.func,
-  format: PropTypes.string
+  format: PropTypes.string,
+  autoFocus: PropTypes.bool
 };
