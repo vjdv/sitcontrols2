@@ -39,6 +39,18 @@ export function dateFromString(datestr, format) {
   var second = secondsIndex > -1 ? dateItems[secondsIndex] : today.getSeconds();
   return new Date(year, month, day, hour, minute, second);
 }
+export function stringFromDate(date, format) {
+  format = format.replace(/yyyy/g, date.getFullYear());
+  format = format.replace(/mm/g, prependZero(date.getMonth() + 1));
+  format = format.replace(/dd/g, prependZero(date.getDate()));
+  format = format.replace(/hh/g, prependZero(date.getHours()));
+  format = format.replace(/ii/g, prependZero(date.getMinutes()));
+  format = format.replace(/ss/g, prependZero(date.getSeconds()));
+  return format;
+}
 export function dayEquals(d1, d2) {
   return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+}
+export function prependZero(val) {
+  return (val < 10 ? "0" : "") + val;
 }
