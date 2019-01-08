@@ -160,7 +160,7 @@ export default class Calendar extends React.Component {
     const dayvalue = e.target.dataset.value;
     if (dayvalue === undefined) return;
     const oldValue = new Date(this.state.value);
-    const newValue = new Date(oldValue);
+    const newValue = new Date(this.state.selection);
     newValue.setDate(Number(dayvalue));
     this.setState({ value: newValue }, () => {
       if (!dayEquals(oldValue, newValue) && this.props.onChange !== undefined) this.props.onChange({ target: this, oldValue, newValue });
