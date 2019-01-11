@@ -51,6 +51,9 @@ export function stringFromDate(date, format) {
 export function dayEquals(d1, d2) {
   return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
 }
+export function timeEquals(d1, d2) {
+  return d1.getHours() === d2.getHours() && d1.getMinutes() === d2.getMinutes() && d1.getSeconds() === d2.getSeconds();
+}
 export function prependZero(val) {
   return (val < 10 ? "0" : "") + val;
 }

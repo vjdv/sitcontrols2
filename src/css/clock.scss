@@ -1,0 +1,177 @@
+.sitcontrol_clock {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 0.8rem;
+  background-color: #fff;
+  color: #000;
+  border: 1px solid #aeaeae;
+  border-radius: 0.3rem;
+  display: inline-block;
+  user-select: none;
+  .sitcontrol_header {
+    text-align: center;
+    background-color: #f0f0f0;
+    border-bottom: 1px solid #aeaeae;
+    border-top-left-radius: 0.3rem;
+    border-top-right-radius: 0.3rem;
+    font-size: 1.5rem;
+    line-height: 1.5rem;
+    color: #ccc;
+    display: flex;
+    flex-direction: row;
+    .sitcontrol_actionbtn {
+      cursor: pointer;
+      background-color: transparent;
+      border: none;
+      max-width: 2rem;
+      font-size: 1.1rem;
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-left: 1px solid #aeaeae;
+      color: #333;
+      &:hover {
+        background-color: #e0e0e0;
+      }
+    }
+    span {
+      display: inline-block;
+      padding: 0.5rem 0;
+      &.sitcontrol_active {
+        color: #000;
+      }
+    }
+    .sitcontrol_ampm {
+      display: inline-block;
+      font-size: 0.8rem;
+      line-height: 0.8rem;
+      padding: 0;
+      max-width: 1.6rem;
+      span {
+        cursor: pointer;
+        padding: 0;
+      }
+    }
+  }
+  .sitcontrol_numbers {
+    position: relative;
+    width: 10rem;
+    height: 10rem;
+    margin: 0.2rem;
+    font-size: 0.7rem;
+  }
+  .sitcontrol_clock_svg {
+    width: 100%;
+    height: 100%;
+    fill: white;
+    stroke: black;
+    stroke-width: 1;
+    stroke-linecap: round;
+    transform: rotate(-90deg);
+    --start-seconds: 57;
+    --start-minutes: 45;
+    --start-hours: 11;
+    .sitcontrol_clock_marks {
+      transform: translate(20px, 20px);
+      stroke-width: 0.2;
+      opacity: 0;
+      transition: opacity 250ms ease-in-out;
+      &.active {
+        opacity: 1;
+      }
+      @for $i from 1 to 13 {
+        > line:nth-child(#{$i}) {
+          transform: rotate(#{$i * 30}deg);
+          @if $i%3 == 0 {
+            stroke-width: 0.5;
+          }
+        }
+      }
+    }
+    .sitcontrol_clock_numbers1,
+    .sitcontrol_clock_numbers2 {
+      cursor: pointer;
+      transform: translate(20px, 6px);
+      opacity: 0;
+      transition: opacity 250ms ease-in-out;
+      &.active {
+        opacity: 1;
+      }
+    }
+    .sitcontrol_clock_numbers1 {
+      @for $i from 1 to 13 {
+        > text:nth-child(#{$i}) {
+          width: 3px;
+          background-color: #aeaeae;
+          font-size: 3px;
+          fill: #111;
+          stroke: none;
+          transform: rotate(#{$i * 30}deg) translateX(-0.75px);
+          transform-origin: 0 14px;
+          @if $i<=3 {
+            transform: rotate(#{$i * 30}deg) translateX(-1.5px);
+          }
+        }
+      }
+    }
+    .sitcontrol_clock_numbers2 {
+      @for $i from 1 to 13 {
+        > text:nth-child(#{$i}) {
+          width: 3px;
+          background-color: #aeaeae;
+          font-size: 3px;
+          fill: #111;
+          stroke: none;
+          transform: rotate(#{$i * 30}deg) translateX(-1.5px);
+          transform-origin: 0 14px;
+          @if $i==3 or $i==4 {
+            transform: rotate(#{$i * 30}deg) translateX(-0.75px);
+          }
+        }
+      }
+    }
+    .sitcontrol_hours_hand {
+      stroke-width: 1;
+      transform: translate(20px, 20px) rotate(calc(var(--start-hours) * 30deg));
+    }
+    .sitcontrol_minutes_hand {
+      stroke-width: 0.6;
+      transform: translate(20px, 20px) rotate(calc(var(--start-minutes) * 6deg));
+    }
+    .sitcontrol_seconds_hand {
+      stroke-width: 0.3;
+      stroke: #d00505;
+      transform: translate(20px, 20px) rotate(calc(var(--start-seconds) * 6deg));
+    }
+    .sitcontrol_pin {
+      stroke: #d00505;
+      stroke-width: 0.2;
+    }
+    .sitcontrol_selection_hand {
+      transform: translate(20px, 20px) rotate(calc(var(--start-minutes) * 6deg));
+      stroke-width: 0.5;
+      stroke: #2a87d0;
+    }
+    .sitcontrol_selection_pin {
+      stroke: none;
+      fill: #2a87d0;
+    }
+    .sitcontrol_selection_hand,
+    .sitcontrol_selection_pin {
+      &.sitcontrol_selection_h {
+        transform: translate(20px, 20px) rotate(calc(var(--start-hours) * 30deg));
+      }
+      &.sitcontrol_selection_ms {
+        transform: translate(20px, 20px) rotate(calc(var(--start-minutes) * 6deg));
+      }
+    }
+  }
+  .sitcontrol_hidden {
+    opacity: 0;
+    transition: opacity 250ms ease-in-out;
+    &.sitcontrol_active {
+      opacity: 1;
+    }
+  }
+}
