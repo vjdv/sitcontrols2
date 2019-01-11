@@ -24,7 +24,7 @@ export default class DatePicker extends React.Component {
         <FontAwesomeIcon id={`sitcalendar_icon_${this.count}`} className="sitcontrol_calendar_icon" icon="calendar-alt" onClick={this.showCalendar} tabIndex="0" />
         <input className="sitcontrol" ref={this.setInput} name={this.props.name} value={text} onChange={this.changeHandler} readOnly={this.props.readOnly} disabled={this.props.disabled} />
         {this.props.navigable && <FontAwesomeIcon className="sitcontrol_right" icon="caret-right" onClick={e => this.plusDay(1)} />}
-        {this.state.showCalendar && <Calendar defaultValue={this.state.value} onChange={this.calendarHandler} autoFocus />}
+        {this.state.showCalendar && <Calendar defaultValue={this.state.value} onChange={this.calendarHandler} lang={this.props.lang} autoFocus />}
       </div>
     );
   }
