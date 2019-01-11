@@ -1870,6 +1870,9 @@
   function dayEquals(d1, d2) {
     return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
   }
+  function timeEquals(d1, d2) {
+    return d1.getHours() === d2.getHours() && d1.getMinutes() === d2.getMinutes() && d1.getSeconds() === d2.getSeconds();
+  }
   function prependZero(val) {
     return (val < 10 ? "0" : "") + val;
   }
@@ -1937,7 +1940,7 @@
         var dayvalue = e.target.dataset.value;
         if (dayvalue === undefined) return;
         var oldValue = new Date(_this.state.value);
-        var newValue = new Date(oldValue);
+        var newValue = new Date(_this.state.selection);
         newValue.setDate(Number(dayvalue));
 
         _this.setState({
@@ -2172,7 +2175,7 @@
 
       _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "changeHandler", function (e) {
         return _this.setState({
-          value: _this.value
+          showCalendar: true
         });
       });
 
@@ -2210,7 +2213,7 @@
         return React.createElement("div", {
           className: "sitcontrol_datepicker",
           style: style
-        }, React.createElement(FontAwesomeIcon, {
+        }, this.props.navigable && React.createElement(FontAwesomeIcon, {
           className: "sitcontrol_left",
           icon: "caret-left",
           onClick: function onClick(e) {
@@ -2230,7 +2233,7 @@
           onChange: this.changeHandler,
           readOnly: this.props.readOnly,
           disabled: this.props.disabled
-        }), React.createElement(FontAwesomeIcon, {
+        }), this.props.navigable && React.createElement(FontAwesomeIcon, {
           className: "sitcontrol_right",
           icon: "caret-right",
           onClick: function onClick(e) {
@@ -2239,6 +2242,7 @@
         }), this.state.showCalendar && React.createElement(Calendar, {
           defaultValue: this.state.value,
           onChange: this.calendarHandler,
+          lang: this.props.lang,
           autoFocus: true
         }));
       }
@@ -2279,9 +2283,559 @@
     defaultValue: new Date(),
     format: "yyyy-mm-dd",
     readOnly: false,
-    disabled: false
+    disabled: false,
+    navigable: false
   };
   DatePicker.propTypes = {
+    defaultValue: PropTypes.any,
+    value: PropTypes.any,
+    onChange: PropTypes.func,
+    format: PropTypes.string,
+    readOnly: PropTypes.bool,
+    disabled: PropTypes.bool,
+    navigable: PropTypes.bool
+  };
+
+  function calculateAngle(mouse_angle, step) {
+    var half = step / 2;
+    var angle = -1;
+
+    for (var i = 0; i <= 360; i += step) {
+      if (mouse_angle >= i - half && mouse_angle <= i + half) {
+        angle = i;
+        break;
+      }
+    }
+
+    return (angle + 270) % 360;
+  }
+
+  var Clock =
+  /*#__PURE__*/
+  function (_React$Component) {
+    _inherits(Clock, _React$Component);
+
+    function Clock(props) {
+      var _this;
+
+      _classCallCheck(this, Clock);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(Clock).call(this, props));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "edit", function () {
+        if (_this.state.index === 0 && !(_this.props.readOnly || _this.props.disabled)) _this.setState({
+          index: 1,
+          selection: _this.state.value
+        });else if (_this.state.index !== 0) {
+          var oldValue = _this.state.value;
+          var newValue = _this.state.selection;
+
+          _this.setState({
+            index: 0,
+            value: newValue
+          }, function () {
+            if (_this.props.onChange && !timeEquals(oldValue, newValue)) _this.props.onChange({
+              target: _assertThisInitialized(_assertThisInitialized(_this)),
+              oldValue: oldValue,
+              newValue: newValue
+            });
+          });
+        }
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setAM", function () {
+        var selection = new Date(_this.state.selection);
+        selection.setHours(selection.getHours() % 12);
+
+        _this.setState({
+          selection: selection
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setPM", function () {
+        var selection = new Date(_this.state.selection);
+        selection.setHours(selection.getHours() % 12 + 12);
+
+        _this.setState({
+          selection: selection
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "calculateMouseAngle", function (e) {
+        var bcr = _this.root.getBoundingClientRect();
+
+        var x1 = bcr.x + bcr.width / 2;
+        var y1 = bcr.y + bcr.height / 2;
+        var x2 = e.pageX;
+        var y2 = e.pageY;
+        return Math.round((Math.atan2(y2 - y1, x2 - x1) + Math.PI) * (180 / Math.PI));
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "mdownHandler", function (e) {
+        if (_this.state.index === 0) return;
+
+        var mouse_angle = _this.calculateMouseAngle(e);
+
+        if (_this.state.index === 1) {
+          var selectionAngle = calculateAngle(mouse_angle, 30);
+          var selection = new Date(_this.state.selection);
+          selection.setHours(selectionAngle / 30 + (selection.getHours() < 12 ? 0 : 12));
+
+          _this.setState({
+            mousedown: true,
+            selection: selection
+          });
+        } else if (_this.state.index === 2) {
+          var _selectionAngle = calculateAngle(mouse_angle, 6);
+
+          var _selection = new Date(_this.state.selection);
+
+          _selection.setMinutes(_selectionAngle / 6);
+
+          _this.setState({
+            mousedown: true,
+            selection: _selection
+          });
+        } else if (_this.state.index === 3) ;
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "muphandler", function () {
+        if (_this.state.index === 0) return;
+        var index = _this.state.index === 1 ? 2 : 1;
+
+        _this.setState({
+          mousedown: false,
+          index: index
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "mmoveHandler", function (e) {
+        if (!_this.state.mousedown) return;
+
+        var mouse_angle = _this.calculateMouseAngle(e);
+
+        var selection = new Date(_this.state.selection);
+
+        if (_this.state.index === 1) {
+          var selectionAngle = calculateAngle(mouse_angle, 30);
+          selection.setHours(selectionAngle / 30 + (selection.getHours() < 12 ? 0 : 12));
+
+          _this.setState({
+            selectionAngle: selectionAngle,
+            selection: selection
+          });
+        } else if (_this.state.index === 2) {
+          var _selectionAngle2 = calculateAngle(mouse_angle, 6);
+
+          selection.setMinutes(_selectionAngle2 / 6);
+
+          _this.setState({
+            selectionAngle: _selectionAngle2,
+            selection: selection
+          });
+        }
+      });
+
+      _this.hours12 = [12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
+      _this.hours24 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
+      _this.minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+      _this.state = {
+        value: props.defaultValue,
+        selectionAngle: 40,
+        index: 0
+      };
+      if (props.value !== undefined) _this.state.value = getDate(props.value, props.format);
+      if (props.editOnly) _this.state.index = 1;
+      _this.state.selection = _this.state.value;
+      return _this;
+    }
+
+    _createClass(Clock, [{
+      key: "render",
+      value: function render() {
+        var _value_style_props,
+            _this2 = this;
+
+        var date = this.state.index === 0 ? this.state.value : this.state.selection;
+        var value_style_props = (_value_style_props = {}, _defineProperty(_value_style_props, "--start-hours", date.getHours() % 12), _defineProperty(_value_style_props, "--start-minutes", date.getMinutes() || 60), _defineProperty(_value_style_props, "--start-seconds", date.getSeconds() || 60), _value_style_props);
+        var selection_class = this.state.index === 1 ? "sitcontrol_selection_h" : this.state.index === 2 ? "sitcontrol_selection_ms" : undefined;
+        return React.createElement("div", {
+          ref: function ref(o) {
+            return _this2.root = o;
+          },
+          tabIndex: "0",
+          className: "sitcontrol_clock " + (this.state.index === 0 ? "pickday" : "pickmonth"),
+          onKeyUp: this.keyHandler
+        }, React.createElement("div", {
+          className: "sitcontrol_header"
+        }, React.createElement("div", {
+          style: {
+            flex: 1
+          }
+        }, React.createElement("span", {
+          className: classnames((this.state.index === 0 || this.state.index === 1) && "sitcontrol_active")
+        }, prependZero(date.getHours() % 12)), React.createElement("span", {
+          className: classnames(this.state.index === 0 && "sitcontrol_active")
+        }, ":"), React.createElement("span", {
+          className: classnames((this.state.index === 0 || this.state.index === 2) && "sitcontrol_active")
+        }, prependZero(date.getMinutes())), this.state.index === 0 && React.createElement("span", {
+          className: classnames((this.state.index === 0 || this.state.index === 3) && "sitcontrol_active")
+        }, date.getHours() < 12 ? "AM" : "PM"), this.state.index !== 0 && React.createElement("div", {
+          className: "sitcontrol_ampm"
+        }, React.createElement("span", {
+          className: classnames(date.getHours() < 12 && "sitcontrol_active"),
+          onClick: this.setAM
+        }, "AM"), React.createElement("span", {
+          className: classnames(date.getHours() >= 12 && "sitcontrol_active"),
+          onClick: this.setPM
+        }, "PM"))), React.createElement("div", {
+          className: "sitcontrol_actionbtn",
+          onClick: this.edit
+        }, React.createElement(FontAwesomeIcon, {
+          icon: this.state.index === 0 ? "pencil-alt" : "check"
+        }))), React.createElement("div", {
+          className: "sitcontrol_numbers",
+          onMouseDown: this.mdownHandler,
+          onMouseUp: this.muphandler,
+          onMouseMove: this.mmoveHandler
+        }, React.createElement("svg", {
+          className: "sitcontrol_clock_svg",
+          viewBox: "0 0 40 40",
+          style: value_style_props
+        }, React.createElement("circle", {
+          cx: "20",
+          cy: "20",
+          r: "19"
+        }), React.createElement("g", {
+          className: classnames("sitcontrol_clock_marks", this.state.index === 0 && "active")
+        }, React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        }), React.createElement("line", {
+          x1: "15",
+          y1: "0",
+          x2: "16",
+          y2: "0"
+        })), React.createElement("g", {
+          className: classnames("sitcontrol_hidden", (this.state.index === 1 || this.state.index === 2) && "sitcontrol_active")
+        }, React.createElement("line", {
+          x1: "16",
+          y1: "0",
+          x2: "0",
+          y2: "0",
+          className: classnames("sitcontrol_selection_hand", selection_class)
+        }), React.createElement("circle", {
+          cx: "15",
+          cy: "0",
+          r: "2.5",
+          className: classnames("sitcontrol_selection_pin", selection_class)
+        })), React.createElement("g", {
+          className: classnames("sitcontrol_clock_numbers1", this.state.index === 1 && "active")
+        }, React.createElement("text", null, "10"), React.createElement("text", null, "11"), React.createElement("text", null, "12"), React.createElement("text", null, "1"), React.createElement("text", null, "2"), React.createElement("text", null, "3"), React.createElement("text", null, "4"), React.createElement("text", null, "5"), React.createElement("text", null, "6"), React.createElement("text", null, "7"), React.createElement("text", null, "8"), React.createElement("text", null, "9")), React.createElement("g", {
+          className: classnames("sitcontrol_clock_numbers2", this.state.index === 2 && "active")
+        }, React.createElement("text", null, "50"), React.createElement("text", null, "55"), React.createElement("text", null, "0"), React.createElement("text", null, "5"), React.createElement("text", null, "10"), React.createElement("text", null, "15"), React.createElement("text", null, "20"), React.createElement("text", null, "25"), React.createElement("text", null, "30"), React.createElement("text", null, "35"), React.createElement("text", null, "40"), React.createElement("text", null, "45")), React.createElement("g", {
+          className: classnames("sitcontrol_ampm", "sitcontrol_hidden", this.state.index === 3 && "sitcontrol_active")
+        }, React.createElement("text", {
+          x: "14.5",
+          y: "-25",
+          className: classnames(this.state.selection.getHours() < 12 && "sitcontrol_active")
+        }, "AM"), React.createElement("text", {
+          x: "14",
+          y: "-12",
+          className: classnames(this.state.selection.getHours() >= 12 && "sitcontrol_active")
+        }, "PM")), React.createElement("g", {
+          className: classnames("sitcontrol_hidden", this.state.index === 0 && "sitcontrol_active")
+        }, React.createElement("line", {
+          x1: "0",
+          y1: "0",
+          x2: "9",
+          y2: "0",
+          className: "sitcontrol_hours_hand"
+        }), React.createElement("line", {
+          x1: "0",
+          y1: "0",
+          x2: "13",
+          y2: "0",
+          className: "sitcontrol_minutes_hand"
+        }), React.createElement("line", {
+          x1: "0",
+          y1: "0",
+          x2: "16",
+          y2: "0",
+          className: "sitcontrol_seconds_hand"
+        }), React.createElement("circle", {
+          cx: "20",
+          cy: "20",
+          r: "0.7",
+          className: "sitcontrol_pin"
+        })))));
+      }
+    }, {
+      key: "componentDidMount",
+      value: function componentDidMount() {
+        var _this3 = this;
+
+        if (this.props.autoFocus) this.root.focus();
+        if (this.props.autoUpdate) this.interval = setInterval(function () {
+          return _this3.setState({
+            value: new Date()
+          });
+        }, 1000);
+      }
+    }], [{
+      key: "getDerivedStateFromProps",
+      value: function getDerivedStateFromProps(props, prevstate) {
+        var newstate = {};
+        if (props.value !== undefined) newstate.value = props.value;
+        return newstate;
+      }
+    }]);
+
+    return Clock;
+  }(React.Component);
+  Clock.defaultProps = {
+    defaultValue: new Date(),
+    autoFocus: false,
+    editOnly: false,
+    readOnly: false,
+    disabled: false
+  };
+  Clock.propTypes = {
+    defaultValue: PropTypes.any,
+    value: PropTypes.any,
+    onChange: PropTypes.func,
+    autoFocus: PropTypes.bool,
+    editOnly: PropTypes.bool,
+    readOnly: PropTypes.bool,
+    disabled: PropTypes.bool
+  };
+
+  var clock_icon = {
+    prefix: "far",
+    iconName: "clock"
+  };
+
+  var DateTimePicker =
+  /*#__PURE__*/
+  function (_React$Component) {
+    _inherits(DateTimePicker, _React$Component);
+
+    function DateTimePicker(props) {
+      var _this;
+
+      _classCallCheck(this, DateTimePicker);
+
+      _this = _possibleConstructorReturn(this, _getPrototypeOf(DateTimePicker).call(this, props));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "setInput", function (o) {
+        return _this.input = o;
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "calendarHandler", function (e) {
+        var oldValue = _this.state.value;
+        var newValue = new Date(e.newValue);
+        newValue.setHours(oldValue.getHours());
+        newValue.setMinutes(oldValue.getMinutes());
+        newValue.setSeconds(oldValue.getSeconds());
+
+        _this.setState({
+          value: e.newValue,
+          showCalendar: false
+        }, function () {
+          if (_this.props.onChange !== undefined && !dayEquals(oldValue, newValue)) {
+            _this.props.onChange({
+              oldValue: oldValue,
+              newValue: newValue,
+              oldStringValue: stringFromDate(oldValue, _this.props.format),
+              newStringValue: stringFromDate(newValue, _this.props.format)
+            });
+          }
+
+          document.getElementById("sitcalendar_icon_".concat(_this.count)).focus();
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "clockHandler", function (e) {
+        var oldValue = _this.state.value;
+        var newValue = new Date(e.newValue);
+        newValue.setFullYear(oldValue.getFullYear());
+        newValue.setMonth(oldValue.getMonth());
+        newValue.setDate(oldValue.getDate());
+
+        _this.setState({
+          value: e.newValue,
+          showClock: false
+        }, function () {
+          if (_this.props.onChange !== undefined && !timeEquals(oldValue, newValue)) {
+            _this.props.onChange({
+              oldValue: oldValue,
+              newValue: newValue,
+              oldStringValue: stringFromDate(oldValue, _this.props.format),
+              newStringValue: stringFromDate(newValue, _this.props.format)
+            });
+          }
+
+          document.getElementById("sitclock_icon_".concat(_this.count)).focus();
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "changeHandler", function (e) {
+        var ss = e.target.selectionStart || 0;
+
+        _this.setState({
+          showCalendar: ss < 10,
+          showClock: ss >= 10
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "showCalendar", function () {
+        if (_this.props.readOnly || _this.props.disabled) return;
+
+        _this.setState({
+          showCalendar: !_this.state.showCalendar,
+          showClock: false
+        }, function () {
+          if (!_this.state.showCalendar) {
+            document.getElementById("sitcalendar_icon_".concat(_this.count)).focus();
+          }
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "showClock", function () {
+        if (_this.props.readOnly || _this.props.disabled) return;
+
+        _this.setState({
+          showClock: !_this.state.showClock,
+          showCalendar: false
+        }, function () {
+          if (!_this.state.showClock) {
+            document.getElementById("sitclock_icon_".concat(_this.count)).focus();
+          }
+        });
+      });
+
+      _this.state = {
+        value: getDate(props.defaultValue, props.format),
+        showCalendar: false
+      };
+      _this.count = DateTimePicker.counter || 1;
+      DateTimePicker.counter = _this.count + 1;
+      return _this;
+    }
+
+    _createClass(DateTimePicker, [{
+      key: "render",
+      value: function render() {
+        var style = {
+          width: this.props.width
+        };
+        Object.assign(style, this.props.style);
+        var text = stringFromDate(this.state.value, this.props.format);
+        return React.createElement("div", {
+          className: "sitcontrol_datetimepicker",
+          style: style
+        }, React.createElement(FontAwesomeIcon, {
+          id: "sitcalendar_icon_".concat(this.count),
+          className: "sitcontrol_calendar_icon",
+          icon: "calendar-alt",
+          onClick: this.showCalendar,
+          tabIndex: "0"
+        }), React.createElement(FontAwesomeIcon, {
+          id: "sitclock_icon_".concat(this.count),
+          className: "sitcontrol_clock_icon",
+          icon: clock_icon,
+          onClick: this.showClock,
+          tabIndex: "0"
+        }), React.createElement("input", {
+          className: "sitcontrol",
+          ref: this.setInput,
+          name: this.props.name,
+          value: text,
+          onChange: this.changeHandler,
+          readOnly: this.props.readOnly,
+          disabled: this.props.disabled
+        }), this.state.showCalendar && React.createElement(Calendar, {
+          defaultValue: this.state.value,
+          onChange: this.calendarHandler,
+          autoFocus: true
+        }), this.state.showClock && React.createElement(Clock, {
+          defaultValue: this.state.value,
+          onChange: this.clockHandler,
+          autoFocus: true,
+          editOnly: true
+        }));
+      }
+    }], [{
+      key: "getDerivedStateFromProps",
+      value: function getDerivedStateFromProps(props, prevstate) {
+        var newstate = {};
+        if (props.value !== undefined) newstate.value = getDate(props.value, props.format);
+        return newstate;
+      }
+    }]);
+
+    return DateTimePicker;
+  }(React.Component);
+  DateTimePicker.defaultProps = {
+    style: {},
+    defaultValue: new Date(),
+    format: "yyyy-mm-dd hh:ii:ss",
+    readOnly: false,
+    disabled: false
+  };
+  DateTimePicker.propTypes = {
     defaultValue: PropTypes.any,
     value: PropTypes.any,
     onChange: PropTypes.func,
@@ -2290,10 +2844,31 @@
     disabled: PropTypes.bool
   };
 
+  var faCheck = {
+    prefix: 'fas',
+    iconName: 'check',
+    icon: [512, 512, [], "f00c", "M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"]
+  };
+  var faPencilAlt = {
+    prefix: 'fas',
+    iconName: 'pencil-alt',
+    icon: [512, 512, [], "f303", "M497.9 142.1l-46.1 46.1c-4.7 4.7-12.3 4.7-17 0l-111-111c-4.7-4.7-4.7-12.3 0-17l46.1-46.1c18.7-18.7 49.1-18.7 67.9 0l60.1 60.1c18.8 18.7 18.8 49.1 0 67.9zM284.2 99.8L21.6 362.4.4 483.9c-2.9 16.4 11.4 30.6 27.8 27.8l121.5-21.3 262.6-262.6c4.7-4.7 4.7-12.3 0-17l-111-111c-4.8-4.7-12.4-4.7-17.1 0zM124.1 339.9c-5.5-5.5-5.5-14.3 0-19.8l154-154c5.5-5.5 14.3-5.5 19.8 0s5.5 14.3 0 19.8l-154 154c-5.5 5.5-14.3 5.5-19.8 0zM88 424h48v36.3l-64.5 11.3-31.1-31.1L51.7 376H88v48z"]
+  };
+
+  var faClock$1 = {
+    prefix: 'far',
+    iconName: 'clock',
+    icon: [512, 512, [], "f017", "M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm0 448c-110.5 0-200-89.5-200-200S145.5 56 256 56s200 89.5 200 200-89.5 200-200 200zm61.8-104.4l-84.9-61.7c-3.1-2.3-4.9-5.9-4.9-9.7V116c0-6.6 5.4-12 12-12h32c6.6 0 12 5.4 12 12v141.7l66.8 48.6c5.4 3.9 6.5 11.4 2.6 16.8L334.6 349c-3.9 5.3-11.4 6.5-16.8 2.6z"]
+  };
+
+  library.add(faCheck, faPencilAlt, faClock$1);
+
   exports.CSelect = Select;
   exports.SCSelect = Select$1;
   exports.Calendar = Calendar;
   exports.DatePicker = DatePicker;
+  exports.Clock = Clock;
+  exports.DateTimePicker = DateTimePicker;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
