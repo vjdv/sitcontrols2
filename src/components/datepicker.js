@@ -20,10 +20,10 @@ export default class DatePicker extends React.Component {
     const text = stringFromDate(this.state.value, this.props.format);
     return (
       <div className={"sitcontrol_datepicker"} style={style}>
-        <FontAwesomeIcon className="sitcontrol_left" icon="caret-left" onClick={e => this.plusDay(-1)} />
+        {this.props.navigable && <FontAwesomeIcon className="sitcontrol_left" icon="caret-left" onClick={e => this.plusDay(-1)} />}
         <FontAwesomeIcon id={`sitcalendar_icon_${this.count}`} className="sitcontrol_calendar_icon" icon="calendar-alt" onClick={this.showCalendar} tabIndex="0" />
         <input className="sitcontrol" ref={this.setInput} name={this.props.name} value={text} onChange={this.changeHandler} readOnly={this.props.readOnly} disabled={this.props.disabled} />
-        <FontAwesomeIcon className="sitcontrol_right" icon="caret-right" onClick={e => this.plusDay(1)} />
+        {this.props.navigable && <FontAwesomeIcon className="sitcontrol_right" icon="caret-right" onClick={e => this.plusDay(1)} />}
         {this.state.showCalendar && <Calendar defaultValue={this.state.value} onChange={this.calendarHandler} autoFocus />}
       </div>
     );
@@ -39,7 +39,7 @@ export default class DatePicker extends React.Component {
       document.getElementById(`sitcalendar_icon_${this.count}`).focus();
     });
   };
-  changeHandler = e => this.setState({ value: this.value });
+  changeHandler = e => this.setState({ showCalendar: true });
   showCalendar = () => {
     if (this.props.readOnly || this.props.disabled) return;
     this.setState({ showCalendar: !this.state.showCalendar }, () => {
@@ -69,7 +69,8 @@ DatePicker.defaultProps = {
   defaultValue: new Date(),
   format: "yyyy-mm-dd",
   readOnly: false,
-  disabled: false
+  disabled: false,
+  navigable: false
 };
 
 DatePicker.propTypes = {
@@ -78,5 +79,6 @@ DatePicker.propTypes = {
   onChange: PropTypes.func,
   format: PropTypes.string,
   readOnly: PropTypes.bool,
-  disabled: PropTypes.bool
+  disabled: PropTypes.bool,
+  navigable: PropTypes.bool
 };
