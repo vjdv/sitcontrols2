@@ -2,7 +2,7 @@ import React from "react";
 import cx from "classnames";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { addDays, addMonths, addYears, getDate, dayEquals, prependZero } from "./../utils/date";
+import { getDate, prependZero, timeEquals } from "./../utils/date";
 
 function calculateAngle(mouse_angle, step) {
   const half = step / 2;
@@ -24,6 +24,7 @@ export default class Clock extends React.Component {
     this.minutes = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
     this.state = { value: props.defaultValue, selectionAngle: 40, index: 0 };
     if (props.value !== undefined) this.state.value = getDate(props.value, props.format);
+    if (props.editOnly) this.state.index = 1;
     this.state.selection = this.state.value;
   }
   render() {
@@ -126,8 +127,14 @@ export default class Clock extends React.Component {
     if (this.props.autoUpdate) this.interval = setInterval(() => this.setState({ value: new Date() }), 1000);
   }
   edit = () => {
-    if (this.state.index === 0 && this.props.editable) this.setState({ index: 1, selection: this.state.value });
-    else if (this.state.index !== 0) this.setState({ index: 0, value: this.state.selection });
+    if (this.state.index === 0 && !(this.props.readOnly || this.props.disabled)) this.setState({ index: 1, selection: this.state.value });
+    else if (this.state.index !== 0) {
+      const oldValue = this.state.value;
+      const newValue = this.state.selection;
+      this.setState({ index: 0, value: newValue }, () => {
+        if (this.props.onChange && !timeEquals(oldValue, newValue)) this.props.onChange({ target: this, oldValue, newValue });
+      });
+    }
   };
   setAM = () => {
     const selection = new Date(this.state.selection);
@@ -190,18 +197,19 @@ export default class Clock extends React.Component {
 }
 
 Clock.defaultProps = {
-  style: {},
   defaultValue: new Date(),
-  onChange: () => {},
-  lang: (navigator.language || navigator.userLanguage || "en").substring(0, 2),
-  format: "yyyy-mm-dd",
   autoFocus: false,
-  editable: true
+  editOnly: false,
+  readOnly: false,
+  disabled: false
 };
 
 Clock.propTypes = {
+  defaultValue: PropTypes.any,
   value: PropTypes.any,
   onChange: PropTypes.func,
-  format: PropTypes.string,
-  autoFocus: PropTypes.bool
+  autoFocus: PropTypes.bool,
+  editOnly: PropTypes.bool,
+  readOnly: PropTypes.bool,
+  disabled: PropTypes.bool
 };
