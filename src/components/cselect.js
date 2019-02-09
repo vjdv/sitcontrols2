@@ -1,7 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import cx from "classnames";
-
+import s from "./../css/sitcontrol.scss";
 var select_counter = 0;
 
 class Select extends React.Component {
@@ -70,7 +70,7 @@ Select.defaultProps = {
   onChange: () => {},
   style: {},
   options: [],
-  ss: {}
+  ss: s
 };
 Select.propTypes = {
   value: PropTypes.string.isRequired,
