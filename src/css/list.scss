@@ -1,0 +1,18 @@
+@import "./scrollarea.scss";
+.sitcontrol_list {
+  background: #fff;
+  > div {
+    padding: 0.3rem;
+    cursor: pointer;
+    color: #111;
+    &:nth-child(odd) {
+      background-color: #f9f9f9;
+    }
+    &:hover {
+      background-color: #daf1fc;
+    }
+    &.sitcontrol_selected {
+      background-color: #a4cbde;
+    }
+  }
+}
