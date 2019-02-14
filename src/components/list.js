@@ -83,11 +83,9 @@ class List extends ScrollArea {
     }
     const index = Number(e.target.dataset.index);
     if (this.state.selection_mode === "single") {
-      //this.itemRenderer = this.itemRenderer.bind(this);
       if (this.state.selection_beforeChange) this.state.selection_beforeChange({ selected: [index] });
       else this.setState({ selected: [index] }, this.changed);
     } else if (this.state.selection_mode === "multiple") {
-      //this.itemRenderer = this.itemRenderer.bind(this);
       if (e.type !== "click" || e.ctrlKey) {
         this.setState(newstate => {
           var ix = newstate.selected.indexOf(index);
@@ -123,7 +121,12 @@ class List extends ScrollArea {
     } else this.handleKeyDown(e);
   };
   static getDerivedStateFromProps(props, prevstate) {
-    const newstate = { data: props.data };
+    const newstate = {};
+    if (prevstate.data !== props.data) {
+      newstate.data = props.data;
+      newstate.realHeight = props.data.length * props.rowHeight;
+      if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
+    }
     React.Children.map(props.children, child => {
       if (child.type === Selection) {
         if (child.props.selected) newstate.selected = child.props.selected;
@@ -133,21 +136,8 @@ class List extends ScrollArea {
           newstate.selection_onChange = child.props.onChange;
         }
       }
-      newstate.realHeight = props.data.length * props.rowHeight;
     });
     return newstate;
-  }
-  computeSizes() {
-    let realHeight = this.content.offsetHeight;
-    let containerHeight = this.wrapper.offsetHeight;
-    let realWidth = this.content.offsetWidth;
-    let containerWidth = this.wrapper.offsetWidth;
-    return {
-      realHeight: realHeight,
-      containerHeight: containerHeight,
-      realWidth: realWidth,
-      containerWidth: containerWidth
-    };
   }
 }
 
