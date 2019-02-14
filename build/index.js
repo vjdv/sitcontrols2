@@ -3976,14 +3976,12 @@
         var index = Number(e.target.dataset.index);
 
         if (_this.state.selection_mode === "single") {
-          //this.itemRenderer = this.itemRenderer.bind(this);
           if (_this.state.selection_beforeChange) _this.state.selection_beforeChange({
             selected: [index]
           });else _this.setState({
             selected: [index]
           }, _this.changed);
         } else if (_this.state.selection_mode === "multiple") {
-          //this.itemRenderer = this.itemRenderer.bind(this);
           if (e.type !== "click" || e.ctrlKey) {
             _this.setState(function (newstate) {
               var ix = newstate.selected.indexOf(index);
@@ -4123,26 +4121,17 @@
     }, {
       key: "componentDidUpdate",
       value: function componentDidUpdate() {}
-    }, {
-      key: "computeSizes",
-      value: function computeSizes() {
-        var realHeight = this.content.offsetHeight;
-        var containerHeight = this.wrapper.offsetHeight;
-        var realWidth = this.content.offsetWidth;
-        var containerWidth = this.wrapper.offsetWidth;
-        return {
-          realHeight: realHeight,
-          containerHeight: containerHeight,
-          realWidth: realWidth,
-          containerWidth: containerWidth
-        };
-      }
     }], [{
       key: "getDerivedStateFromProps",
       value: function getDerivedStateFromProps(props, prevstate) {
-        var newstate = {
-          data: props.data
-        };
+        var newstate = {};
+
+        if (prevstate.data !== props.data) {
+          newstate.data = props.data;
+          newstate.realHeight = props.data.length * props.rowHeight;
+          if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
+        }
+
         React.Children.map(props.children, function (child) {
           if (child.type === Selection) {
             if (child.props.selected) newstate.selected = child.props.selected;
@@ -4153,8 +4142,6 @@
               newstate.selection_onChange = child.props.onChange;
             }
           }
-
-          newstate.realHeight = props.data.length * props.rowHeight;
         });
         return newstate;
       }
@@ -4192,6 +4179,108 @@
     labelField: PropTypes.string
   }, _defineProperty(_List$propTypes, "data", PropTypes.array), _defineProperty(_List$propTypes, "draggable", PropTypes.bool), _defineProperty(_List$propTypes, "droppable", PropTypes.bool), _defineProperty(_List$propTypes, "itemRenderer", PropTypes.func), _defineProperty(_List$propTypes, "rowHeight", PropTypes.number), _List$propTypes);
 
+  var Input =
+  /*#__PURE__*/
+  function (_React$Component) {
+    _inherits(Input, _React$Component);
+
+    function Input() {
+      var _getPrototypeOf2;
+
+      var _this;
+
+      _classCallCheck(this, Input);
+
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(Input)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
+        value: _this.props.defaultValue
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "changeHandler", function (e) {
+        var oldValue = _this.state.value;
+        var newValue = e.target.value;
+        if (_this.props.uppercase) newValue = newValue.toUpperCase();else if (_this.props.lowercase) newValue = newValue.toLowerCase();
+
+        if (_this.props.accept !== undefined) {
+          var re = new RegExp("^" + _this.props.accept + "$");
+          newValue = re.test(newValue) ? newValue : oldValue;
+        }
+
+        var _e = {
+          target: _assertThisInitialized(_assertThisInitialized(_this)),
+          oldValue: oldValue,
+          newValue: newValue,
+          event: e
+        };
+        if (_this.props.value !== undefined && _this.props.onChange !== undefined) _this.props.onChange(_e);else _this.setState({
+          value: newValue
+        }, function () {
+          if (_this.props.onChange !== undefined) _this.props.onChange(_e);
+        });
+      });
+
+      return _this;
+    }
+
+    _createClass(Input, [{
+      key: "render",
+      value: function render() {
+        var _this$props = this.props,
+            value = _this$props.value,
+            defaultValue = _this$props.defaultValue,
+            className = _this$props.className,
+            onChange = _this$props.onChange,
+            accept = _this$props.accept,
+            style = _this$props.style,
+            witdh = _this$props.witdh,
+            ss = _this$props.ss,
+            uppercase = _this$props.uppercase,
+            lowercase = _this$props.lowercase,
+            inputprops = _objectWithoutProperties(_this$props, ["value", "defaultValue", "className", "onChange", "accept", "style", "witdh", "ss", "uppercase", "lowercase"]);
+
+        if (style !== undefined && width !== undefined) Object.assign(style, {
+          width: width
+        });
+        return React.createElement("input", _extends({
+          className: classnames(s.sitcontrol, className),
+          style: style,
+          value: this.state.value,
+          onChange: this.changeHandler
+        }, inputprops));
+      }
+    }], [{
+      key: "getDerivedStateFromProps",
+      value: function getDerivedStateFromProps(props, state) {
+        var newstate = {};
+        if (props.value !== undefined && state.value !== props.value) newstate.value = props.value;
+        return newstate;
+      }
+    }]);
+
+    return Input;
+  }(React.Component);
+  Input.defaultProps = {
+    defaultValue: "",
+    uppercase: false,
+    lowercase: false,
+    ss: s
+  };
+  Input.propTypes = {
+    value: PropTypes.string,
+    defaultValue: PropTypes.string,
+    accept: PropTypes.string,
+    uppercase: PropTypes.bool,
+    lowercase: PropTypes.bool,
+    onChange: PropTypes.func,
+    width: PropTypes.number,
+    ss: PropTypes.object
+  };
+
   var faCheck = {
     prefix: 'fas',
     iconName: 'check',
@@ -4218,6 +4307,7 @@
   exports.DateTimePicker = DateTimePicker;
   exports.List = List;
   exports.Selection = Selection;
+  exports.Input = Input;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
