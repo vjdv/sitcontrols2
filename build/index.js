@@ -231,7 +231,7 @@
   }());
   });
 
-  var s = {"sitcontrol":"sitcontrol_sitcontrol__1XpeW"};
+  var s = {"sitcontrol":"sitcontrol_sitcontrol__1XpeW","right":"sitcontrol_right__2fESG"};
 
   var select_counter = 0;
 
@@ -4281,6 +4281,193 @@
     ss: PropTypes.object
   };
 
+  function getNumber(value_any) {
+    var value = typeof value_any === "number" ? value_any : Number(value_any);
+
+    if (isNaN(value)) {
+      console.warn("NotaNumber: %s", value_any);
+      value = 0;
+    }
+
+    return value;
+  }
+
+  function formatNumber(number, n, x) {
+    var re = "\\d(?=(\\d{" + (x || 3) + "})+" + (n > 0 ? "\\." : "$") + ")";
+    return number.toFixed(Math.max(0, ~~n)).replace(new RegExp(re, "g"), "$&,");
+  }
+
+  var NumberInput =
+  /*#__PURE__*/
+  function (_React$Component) {
+    _inherits(NumberInput, _React$Component);
+
+    function NumberInput() {
+      var _getPrototypeOf2;
+
+      var _this;
+
+      _classCallCheck(this, NumberInput);
+
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      _this = _possibleConstructorReturn(this, (_getPrototypeOf2 = _getPrototypeOf(NumberInput)).call.apply(_getPrototypeOf2, [this].concat(args)));
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "state", {
+        value: getNumber(_this.props.defaultValue),
+        focused: false
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "changeHandler", function (e) {
+        var oldValue = _this.state.value;
+        var text = e.target.value;
+        var newValue_str = text.replace(/[^0-9.]/g, "");
+        if (text.charAt(0) === "-") newValue_str = "-" + newValue_str;
+        var parts = newValue_str.split(".");
+        var newValue = 0;
+        if (newValue_str === "" || newValue_str === "-" || newValue_str === "-0") newValue = 0;else if (_this.props.decimals === 0 || parts.length === 1) {
+          newValue = Number(parts[0]);
+          newValue_str = formatNumber(newValue);
+        } else if (parts[1] !== "") {
+          if (parts[1].length > _this.props.decimals) parts[1] = parts[1].substring(0, _this.props.decimals);
+          newValue = Number(parts[0] + "." + parts[1]);
+          newValue_str = formatNumber(newValue, parts[1].length);
+        }
+
+        if (_this.props.value !== undefined) {
+          _this.state.text = newValue_str;
+
+          _this.props.onChange({
+            target: _assertThisInitialized(_assertThisInitialized(_this)),
+            oldValue: oldValue,
+            newValue: newValue
+          });
+        } else {
+          _this.setState({
+            value: newValue,
+            text: newValue_str
+          }, function () {
+            if (_this.props.onChange !== undefined && oldValue !== newValue) {
+              _this.props.onChange({
+                target: _assertThisInitialized(_assertThisInitialized(_this)),
+                oldValue: oldValue,
+                newValue: newValue
+              });
+            }
+          });
+        }
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "focused", function (e) {
+        e.persist();
+        var decimals = _this.state.value % 1 === 0 ? 0 : _this.props.decimals;
+
+        _this.setState({
+          focused: true,
+          text: formatNumber(_this.state.value, decimals)
+        }, function () {
+          _this.input.select();
+
+          if (_this.props.onFocus) _this.props.onFocus({
+            target: _assertThisInitialized(_assertThisInitialized(_this)),
+            event: e
+          });
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "blurred", function (e) {
+        e.persist();
+
+        _this.setState({
+          focused: false
+        }, function () {
+          if (_this.props.onBlur) _this.props.onBlur({
+            target: _assertThisInitialized(_assertThisInitialized(_this)),
+            event: e
+          });
+        });
+      });
+
+      _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "keyUpHandler", function (e) {
+        e.persist();
+
+        if (_this.props.onEnter && e.keyCode === 13) {
+          e.preventDefault();
+
+          _this.props.onEnter({
+            target: _assertThisInitialized(_assertThisInitialized(_this))
+          });
+        }
+
+        if (_this.props.onKeyUp) {
+          _this.props.onKeyUp(e);
+        }
+      });
+
+      return _this;
+    }
+
+    _createClass(NumberInput, [{
+      key: "render",
+      value: function render() {
+        var _this2 = this;
+
+        var _this$props = this.props,
+            value = _this$props.value,
+            defaultValue = _this$props.defaultValue,
+            onChange = _this$props.onChange,
+            onFocus = _this$props.onFocus,
+            onBlur = _this$props.onBlur,
+            onKeyUp = _this$props.onKeyUp,
+            onEnter = _this$props.onEnter,
+            prefix = _this$props.prefix,
+            suffix = _this$props.suffix,
+            ss = _this$props.ss,
+            xprops = _objectWithoutProperties(_this$props, ["value", "defaultValue", "onChange", "onFocus", "onBlur", "onKeyUp", "onEnter", "prefix", "suffix", "ss"]);
+
+        var text = this.state.focused ? this.state.text : this.props.prefix + formatNumber(this.state.value, this.props.decimals) + this.props.suffix;
+        return React.createElement("input", _extends({
+          ref: function ref(o) {
+            return _this2.input = o;
+          },
+          className: classnames(ss.sitcontrol, ss.right),
+          value: text,
+          onChange: this.changeHandler,
+          onFocus: this.focused,
+          onBlur: this.blurred,
+          onKeyUp: this.keyUpHandler
+        }, xprops));
+      }
+    }], [{
+      key: "getDerivedStateFromProps",
+      value: function getDerivedStateFromProps(props, prevstate) {
+        var newstate = {};
+        if (props.value !== undefined && prevstate.value !== props.value) newstate.value = getNumber(props.value);
+        return newstate;
+      }
+    }]);
+
+    return NumberInput;
+  }(React.Component);
+  NumberInput.defaultProps = {
+    defaultValue: 0,
+    prefix: "",
+    suffix: "",
+    decimals: 0,
+    ss: s
+  };
+  NumberInput.propTypes = {
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    prefix: PropTypes.string,
+    suffix: PropTypes.string,
+    decimals: PropTypes.number,
+    onChange: PropTypes.func,
+    ss: PropTypes.object
+  };
+
   var faCheck = {
     prefix: 'fas',
     iconName: 'check',
@@ -4308,6 +4495,7 @@
   exports.List = List;
   exports.Selection = Selection;
   exports.Input = Input;
+  exports.NumberInput = NumberInput;
 
   Object.defineProperty(exports, '__esModule', { value: true });
 
