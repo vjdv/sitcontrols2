@@ -4,7 +4,8 @@ import cx from "classnames";
 import ScrollBar from "./scrollbar";
 import PropTypes from "prop-types";
 import ScrollArea from "./scrollarea";
-import s from "./../css/list.scss";
+import s1 from "./../css/list.scss";
+import s2 from "./../css/scrollarea.scss";
 
 class List extends ScrollArea {
   constructor(props) {
@@ -18,7 +19,7 @@ class List extends ScrollArea {
     this.selected_obj = {};
     this.state.selected.forEach(i => (this.selected_obj[i] = true));
     const containerProps = this.containerPropsFunc(this.props);
-    let { className, contentClassName, ownerDocument } = this.props;
+    let { className, contentClassName, ownerDocument, ss } = this.props;
     let withMotion = false;
     let contentStyle = {
       marginTop: -this.state.topPosition,
@@ -27,11 +28,11 @@ class List extends ScrollArea {
     var from = Math.floor(this.state.topPosition / this.props.rowHeight);
     var to = Math.min(this.state.data.length - 1, Math.floor((this.state.containerHeight + this.state.topPosition - 1) / this.props.rowHeight));
     return (
-      <div ref={x => (this.wrapper = x)} className={cx(s.scrollarea, className)} style={this.props.style} onWheel={this.handleWheel.bind(this)} {...containerProps}>
+      <div ref={x => (this.wrapper = x)} className={cx(ss.scrollarea, className)} style={this.props.style} onWheel={this.handleWheel.bind(this)} {...containerProps}>
         <div
           ref={x => (this.content = x)}
           style={{ height: this.state.realHeight, ...this.props.contentStyle, ...contentStyle }}
-          className={cx(s.sitcontrol_list, s.scrollarea_content)}
+          className={cx(ss.sitcontrol_list, ss.scrollarea_content)}
           onTouchStart={this.handleTouchStart.bind}
           onTouchMove={this.handleTouchMove.bind}
           onTouchEnd={this.handleTouchEnd.bind}
@@ -56,7 +57,6 @@ class List extends ScrollArea {
             minScrollSize={this.props.minScrollSize}
             onFocus={this.focusContent}
             type="vertical"
-            ss={s}
           />
         )}
       </div>
@@ -67,7 +67,7 @@ class List extends ScrollArea {
     const items = [];
     var count = 0;
     for (var i = from; i <= to; i++) {
-      const item = this.itemRenderer({ index: i, key: count, style: { height: this.props.rowHeight }, s });
+      const item = this.itemRenderer({ index: i, key: count, style: { height: this.props.rowHeight }, selected: !!this.state.selected[i], ss: this.props.ss });
       items.push(item);
       count++;
     }
@@ -122,11 +122,7 @@ class List extends ScrollArea {
   };
   static getDerivedStateFromProps(props, prevstate) {
     const newstate = {};
-    if (prevstate.data !== props.data) {
-      newstate.data = props.data;
-      newstate.realHeight = props.data.length * props.rowHeight;
-      if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
-    }
+    if (prevstate.data !== props.data) newstate.data = props.data;
     React.Children.map(props.children, child => {
       if (child.type === Selection) {
         if (child.props.selected) newstate.selected = child.props.selected;
@@ -137,26 +133,16 @@ class List extends ScrollArea {
         }
       }
     });
+    newstate.realHeight = props.data.length * props.rowHeight;
+    if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
     return newstate;
   }
 }
 
-List.itemRenderer = function({ index, key, style }) {
+List.itemRenderer = function({ index, key, style, selected }) {
   const o = this.state.data[index];
-  //const picked = this.state.pickedIndex === index;
-  //const selected = this.state.value === o[this.props.valueField];
-  const selected = !!this.state.selected[index];
-  console.log(selected);
   return (
-    <div
-      className={cx("sitcontrol_list_item", selected && "sitcontrol_selected")}
-      data-index={index}
-      key={key}
-      style={style}
-      onClick={this.clickHandler}
-      onTouchEnd={this.clickHandler}
-      draggable={this.props.draggable}
-    >
+    <div className={cx("sitcontrol_list_item", selected && "sitcontrol_selected")} data-index={index} key={key} style={style} onClick={this.clickHandler} onTouchEnd={this.clickHandler}>
       {o[this.props.labelField]}
     </div>
   );
@@ -178,7 +164,8 @@ List.defaultProps = {
   swapWheelAxes: false,
   contentWindow: typeof window === "object" ? window : undefined,
   ownerDocument: typeof document === "object" ? document : undefined,
-  focusableTabIndex: 1
+  focusableTabIndex: 1,
+  ss: { ...s1, ...s2 }
 };
 
 List.propTypes = {
@@ -188,7 +175,8 @@ List.propTypes = {
   draggable: PropTypes.bool,
   droppable: PropTypes.bool,
   itemRenderer: PropTypes.func,
-  rowHeight: PropTypes.number
+  rowHeight: PropTypes.number,
+  ss: PropTypes.object
 };
 
 export default List;
