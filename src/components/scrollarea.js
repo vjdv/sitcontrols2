@@ -2,6 +2,8 @@ import React from "react";
 import PropTypes from "prop-types";
 import lineHeight from "line-height";
 import ScrollBar from "./Scrollbar";
+import cx from "classnames";
+import s from "./../css/scrollarea.scss";
 
 const eventTypes = {
   wheel: "wheel",
@@ -116,21 +118,17 @@ export default class ScrollArea extends React.Component {
         type="horizontal"
       />
     ) : null;
-
-    let classes = "scrollarea " + (className || "");
-    let contentClasses = "scrollarea-content " + (contentClassName || "");
-
     let contentStyle = {
       marginTop: -this.state.topPosition,
       marginLeft: -this.state.leftPosition
     };
 
     return (
-      <div ref={x => (this.wrapper = x)} className={classes} style={this.props.style} onWheel={this.handleWheel.bind(this)}>
+      <div ref={x => (this.wrapper = x)} className={cx(this.props.ss.scrollarea, className)} style={this.props.style} onWheel={this.handleWheel.bind(this)}>
         <div
           ref={x => (this.content = x)}
           style={{ ...this.props.contentStyle, ...contentStyle }}
-          className={contentClasses}
+          className={cx(this.props.ss.scrollarea_content, contentClassName)}
           onTouchStart={this.handleTouchStart.bind(this)}
           onTouchMove={this.handleTouchMove.bind(this)}
           onTouchEnd={this.handleTouchEnd.bind(this)}
@@ -449,7 +447,8 @@ ScrollArea.propTypes = {
   minScrollSize: PropTypes.number,
   swapWheelAxes: PropTypes.bool,
   stopScrollPropagation: PropTypes.bool,
-  focusableTabIndex: PropTypes.number
+  focusableTabIndex: PropTypes.number,
+  s: PropTypes.object
 };
 
 ScrollArea.defaultProps = {
@@ -460,5 +459,6 @@ ScrollArea.defaultProps = {
   swapWheelAxes: false,
   contentWindow: typeof window === "object" ? window : undefined,
   ownerDocument: typeof document === "object" ? document : undefined,
-  focusableTabIndex: 1
+  focusableTabIndex: 1,
+  ss: s
 };

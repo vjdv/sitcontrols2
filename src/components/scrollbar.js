@@ -1,6 +1,7 @@
 import React from "react";
 import PropTypes from "prop-types";
 import cx from "classnames";
+import s from "./../css/scrollarea.scss";
 
 class ScrollBar extends React.Component {
   constructor(props) {
@@ -159,11 +160,13 @@ ScrollBar.propTypes = {
   scrollbarStyle: PropTypes.object,
   type: PropTypes.oneOf(["vertical", "horizontal"]),
   ownerDocument: PropTypes.any,
-  minScrollSize: PropTypes.number
+  minScrollSize: PropTypes.number,
+  ss: PropTypes.object
 };
 
 ScrollBar.defaultProps = {
-  type: "vertical"
+  type: "vertical",
+  ss: s
 };
 
 export default ScrollBar;

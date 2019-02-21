@@ -3,6 +3,7 @@ import Calendar from "./components/calendar";
 import DatePicker from "./components/datepicker";
 import Clock from "./components/clock";
 import DateTimePicker from "./components/datetimepicker";
+import ScrollArea from "./components/scrollarea";
 import List from "./components/list";
 import Selection from "./components/selection";
 import Input from "./components/input";
@@ -13,4 +14,4 @@ import { faClock } from "@fortawesome/free-regular-svg-icons";
 
 library.add(faCheck, faPencilAlt, faClock);
 
-export { CSelect, Calendar, DatePicker, Clock, DateTimePicker, List, Selection, Input, NumberInput };
+export { CSelect, Calendar, DatePicker, Clock, DateTimePicker, ScrollArea, List, Selection, Input, NumberInput };
