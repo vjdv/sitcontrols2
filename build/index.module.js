@@ -2817,17 +2817,133 @@ DateTimePicker.propTypes = {
   disabled: PropTypes.bool
 };
 
-function Selection(props) {}
+// This code has been refactored for 140 bytes
+// You can see the original here: https://github.com/twolfson/computedStyle/blob/04cd1da2e30fa45844f95f5cb1ac898e9b9ef050/lib/computedStyle.js
+var computedStyle = function (el, prop, getComputedStyle) {
+  getComputedStyle = window.getComputedStyle;
 
-Selection.defaultProps = {
-  mode: "single"
+  // In one fell swoop
+  return (
+    // If we have getComputedStyle
+    getComputedStyle ?
+      // Query it
+      // TODO: From CSS-Query notes, we might need (node, null) for FF
+      getComputedStyle(el) :
+
+    // Otherwise, we are in IE and use currentStyle
+      el.currentStyle
+  )[
+    // Switch to camelCase for CSSOM
+    // DEV: Grabbed from jQuery
+    // https://github.com/jquery/jquery/blob/1.9-stable/src/css.js#L191-L194
+    // https://github.com/jquery/jquery/blob/1.9-stable/src/core.js#L593-L597
+    prop.replace(/-(\w)/gi, function (word, letter) {
+      return letter.toUpperCase();
+    })
+  ];
 };
-Selection.propTypes = {
-  mode: PropTypes.oneOf(["single", "multiple"]),
-  onBeforeChange: PropTypes.func,
-  onChange: PropTypes.func,
-  selected: PropTypes.array
-};
+
+var computedStyle_commonjs = computedStyle;
+
+// Load in dependencies
+
+
+/**
+ * Calculate the `line-height` of a given node
+ * @param {HTMLElement} node Element to calculate line height of. Must be in the DOM.
+ * @returns {Number} `line-height` of the element in pixels
+ */
+function lineHeight(node) {
+  // Grab the line-height via style
+  var lnHeightStr = computedStyle_commonjs(node, 'line-height');
+  var lnHeight = parseFloat(lnHeightStr, 10);
+
+  // If the lineHeight did not contain a unit (i.e. it was numeric), convert it to ems (e.g. '2.3' === '2.3em')
+  if (lnHeightStr === lnHeight + '') {
+    // Save the old lineHeight style and update the em unit to the element
+    var _lnHeightStyle = node.style.lineHeight;
+    node.style.lineHeight = lnHeightStr + 'em';
+
+    // Calculate the em based height
+    lnHeightStr = computedStyle_commonjs(node, 'line-height');
+    lnHeight = parseFloat(lnHeightStr, 10);
+
+    // Revert the lineHeight style
+    if (_lnHeightStyle) {
+      node.style.lineHeight = _lnHeightStyle;
+    } else {
+      delete node.style.lineHeight;
+    }
+  }
+
+  // If the lineHeight is in `pt`, convert it to pixels (4px for 3pt)
+  // DEV: `em` units are converted to `pt` in IE6
+  // Conversion ratio from https://developer.mozilla.org/en-US/docs/Web/CSS/length
+  if (lnHeightStr.indexOf('pt') !== -1) {
+    lnHeight *= 4;
+    lnHeight /= 3;
+  // Otherwise, if the lineHeight is in `mm`, convert it to pixels (96px for 25.4mm)
+  } else if (lnHeightStr.indexOf('mm') !== -1) {
+    lnHeight *= 96;
+    lnHeight /= 25.4;
+  // Otherwise, if the lineHeight is in `cm`, convert it to pixels (96px for 2.54cm)
+  } else if (lnHeightStr.indexOf('cm') !== -1) {
+    lnHeight *= 96;
+    lnHeight /= 2.54;
+  // Otherwise, if the lineHeight is in `in`, convert it to pixels (96px for 1in)
+  } else if (lnHeightStr.indexOf('in') !== -1) {
+    lnHeight *= 96;
+  // Otherwise, if the lineHeight is in `pc`, convert it to pixels (12pt for 1pc)
+  } else if (lnHeightStr.indexOf('pc') !== -1) {
+    lnHeight *= 16;
+  }
+
+  // Continue our computation
+  lnHeight = Math.round(lnHeight);
+
+  // If the line-height is "normal", calculate by font-size
+  if (lnHeightStr === 'normal') {
+    // Create a temporary node
+    var nodeName = node.nodeName;
+    var _node = document.createElement(nodeName);
+    _node.innerHTML = '&nbsp;';
+
+    // If we have a text area, reset it to only 1 row
+    // https://github.com/twolfson/line-height/issues/4
+    if (nodeName.toUpperCase() === 'TEXTAREA') {
+      _node.setAttribute('rows', '1');
+    }
+
+    // Set the font-size of the element
+    var fontSizeStr = computedStyle_commonjs(node, 'font-size');
+    _node.style.fontSize = fontSizeStr;
+
+    // Remove default padding/border which can affect offset height
+    // https://github.com/twolfson/line-height/issues/4
+    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight
+    _node.style.padding = '0px';
+    _node.style.border = '0px';
+
+    // Append it to the body
+    var body = document.body;
+    body.appendChild(_node);
+
+    // Assume the line height of the element is the height
+    var height = _node.offsetHeight;
+    lnHeight = height;
+
+    // Remove our child from the DOM
+    body.removeChild(_node);
+  }
+
+  // Return the calculated height
+  return lnHeight;
+}
+
+// Export lineHeight
+var lineHeight_1 = lineHeight;
+
+var s$1 = {"scrollarea_content":"scrollarea_scrollarea_content__8hsE8","scrollarea":"scrollarea_scrollarea__290lp","scrollbar_container":"scrollarea_scrollbar_container__LddVj","horizontal":"scrollarea_horizontal__G0cK3","scrollbar":"scrollarea_scrollbar__1C1M3","vertical":"scrollarea_vertical__3PtcZ","active":"scrollarea_active__14BDD"};
 
 var ScrollBar =
 /*#__PURE__*/
@@ -3041,354 +3157,12 @@ ScrollBar.propTypes = {
   scrollbarStyle: PropTypes.object,
   type: PropTypes.oneOf(["vertical", "horizontal"]),
   ownerDocument: PropTypes.any,
-  minScrollSize: PropTypes.number
+  minScrollSize: PropTypes.number,
+  ss: PropTypes.object
 };
 ScrollBar.defaultProps = {
-  type: "vertical"
-};
-
-// This code has been refactored for 140 bytes
-// You can see the original here: https://github.com/twolfson/computedStyle/blob/04cd1da2e30fa45844f95f5cb1ac898e9b9ef050/lib/computedStyle.js
-var computedStyle = function (el, prop, getComputedStyle) {
-  getComputedStyle = window.getComputedStyle;
-
-  // In one fell swoop
-  return (
-    // If we have getComputedStyle
-    getComputedStyle ?
-      // Query it
-      // TODO: From CSS-Query notes, we might need (node, null) for FF
-      getComputedStyle(el) :
-
-    // Otherwise, we are in IE and use currentStyle
-      el.currentStyle
-  )[
-    // Switch to camelCase for CSSOM
-    // DEV: Grabbed from jQuery
-    // https://github.com/jquery/jquery/blob/1.9-stable/src/css.js#L191-L194
-    // https://github.com/jquery/jquery/blob/1.9-stable/src/core.js#L593-L597
-    prop.replace(/-(\w)/gi, function (word, letter) {
-      return letter.toUpperCase();
-    })
-  ];
-};
-
-var computedStyle_commonjs = computedStyle;
-
-// Load in dependencies
-
-
-/**
- * Calculate the `line-height` of a given node
- * @param {HTMLElement} node Element to calculate line height of. Must be in the DOM.
- * @returns {Number} `line-height` of the element in pixels
- */
-function lineHeight(node) {
-  // Grab the line-height via style
-  var lnHeightStr = computedStyle_commonjs(node, 'line-height');
-  var lnHeight = parseFloat(lnHeightStr, 10);
-
-  // If the lineHeight did not contain a unit (i.e. it was numeric), convert it to ems (e.g. '2.3' === '2.3em')
-  if (lnHeightStr === lnHeight + '') {
-    // Save the old lineHeight style and update the em unit to the element
-    var _lnHeightStyle = node.style.lineHeight;
-    node.style.lineHeight = lnHeightStr + 'em';
-
-    // Calculate the em based height
-    lnHeightStr = computedStyle_commonjs(node, 'line-height');
-    lnHeight = parseFloat(lnHeightStr, 10);
-
-    // Revert the lineHeight style
-    if (_lnHeightStyle) {
-      node.style.lineHeight = _lnHeightStyle;
-    } else {
-      delete node.style.lineHeight;
-    }
-  }
-
-  // If the lineHeight is in `pt`, convert it to pixels (4px for 3pt)
-  // DEV: `em` units are converted to `pt` in IE6
-  // Conversion ratio from https://developer.mozilla.org/en-US/docs/Web/CSS/length
-  if (lnHeightStr.indexOf('pt') !== -1) {
-    lnHeight *= 4;
-    lnHeight /= 3;
-  // Otherwise, if the lineHeight is in `mm`, convert it to pixels (96px for 25.4mm)
-  } else if (lnHeightStr.indexOf('mm') !== -1) {
-    lnHeight *= 96;
-    lnHeight /= 25.4;
-  // Otherwise, if the lineHeight is in `cm`, convert it to pixels (96px for 2.54cm)
-  } else if (lnHeightStr.indexOf('cm') !== -1) {
-    lnHeight *= 96;
-    lnHeight /= 2.54;
-  // Otherwise, if the lineHeight is in `in`, convert it to pixels (96px for 1in)
-  } else if (lnHeightStr.indexOf('in') !== -1) {
-    lnHeight *= 96;
-  // Otherwise, if the lineHeight is in `pc`, convert it to pixels (12pt for 1pc)
-  } else if (lnHeightStr.indexOf('pc') !== -1) {
-    lnHeight *= 16;
-  }
-
-  // Continue our computation
-  lnHeight = Math.round(lnHeight);
-
-  // If the line-height is "normal", calculate by font-size
-  if (lnHeightStr === 'normal') {
-    // Create a temporary node
-    var nodeName = node.nodeName;
-    var _node = document.createElement(nodeName);
-    _node.innerHTML = '&nbsp;';
-
-    // If we have a text area, reset it to only 1 row
-    // https://github.com/twolfson/line-height/issues/4
-    if (nodeName.toUpperCase() === 'TEXTAREA') {
-      _node.setAttribute('rows', '1');
-    }
-
-    // Set the font-size of the element
-    var fontSizeStr = computedStyle_commonjs(node, 'font-size');
-    _node.style.fontSize = fontSizeStr;
-
-    // Remove default padding/border which can affect offset height
-    // https://github.com/twolfson/line-height/issues/4
-    // https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/offsetHeight
-    _node.style.padding = '0px';
-    _node.style.border = '0px';
-
-    // Append it to the body
-    var body = document.body;
-    body.appendChild(_node);
-
-    // Assume the line height of the element is the height
-    var height = _node.offsetHeight;
-    lnHeight = height;
-
-    // Remove our child from the DOM
-    body.removeChild(_node);
-  }
-
-  // Return the calculated height
-  return lnHeight;
-}
-
-// Export lineHeight
-var lineHeight_1 = lineHeight;
-
-var ScrollBar$1 =
-/*#__PURE__*/
-function (_React$Component) {
-  _inherits(ScrollBar, _React$Component);
-
-  function ScrollBar(props) {
-    var _this;
-
-    _classCallCheck(this, ScrollBar);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(ScrollBar).call(this, props));
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "handleScrollBarContainerClick", function (e) {
-      e.preventDefault();
-
-      var multiplier = _this.computeMultiplier();
-
-      var clientPosition = _this.isVertical() ? e.clientY : e.clientX;
-
-      var _this$scrollbarContai = _this.scrollbarContainer.getBoundingClientRect(),
-          top = _this$scrollbarContai.top,
-          left = _this$scrollbarContai.left;
-
-      var clientScrollPosition = _this.isVertical() ? top : left;
-      var position = clientPosition - clientScrollPosition;
-      var proportionalToPageScrollSize = _this.props.containerSize * _this.props.containerSize / _this.props.realSize;
-
-      _this.setState({
-        isDragging: true,
-        lastClientPosition: clientPosition
-      });
-
-      _this.props.onPositionChange((position - proportionalToPageScrollSize / 2) / multiplier);
-    });
-
-    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "handleMouseDown", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
-      var lastClientPosition = _this.isVertical() ? e.clientY : e.clientX;
-
-      _this.setState({
-        isDragging: true,
-        lastClientPosition: lastClientPosition
-      });
-
-      _this.props.onFocus();
-    });
-
-    var newState = _this.calculateState(props);
-
-    _this.state = {
-      position: newState.position,
-      scrollSize: newState.scrollSize,
-      isDragging: false,
-      lastClientPosition: 0
-    };
-
-    if (props.type === "vertical") {
-      _this.bindedHandleMouseMove = _this.handleMouseMoveForVertical.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    } else {
-      _this.bindedHandleMouseMove = _this.handleMouseMoveForHorizontal.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    }
-
-    _this.bindedHandleMouseUp = _this.handleMouseUp.bind(_assertThisInitialized(_assertThisInitialized(_this)));
-    return _this;
-  }
-
-  _createClass(ScrollBar, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
-      if (this.props.ownerDocument) {
-        this.props.ownerDocument.addEventListener("mousemove", this.bindedHandleMouseMove);
-        this.props.ownerDocument.addEventListener("mouseup", this.bindedHandleMouseUp);
-      }
-    }
-  }, {
-    key: "componentWillReceiveProps",
-    value: function componentWillReceiveProps(nextProps) {
-      this.setState(this.calculateState(nextProps));
-    }
-  }, {
-    key: "componentWillUnmount",
-    value: function componentWillUnmount() {
-      if (this.props.ownerDocument) {
-        this.props.ownerDocument.removeEventListener("mousemove", this.bindedHandleMouseMove);
-        this.props.ownerDocument.removeEventListener("mouseup", this.bindedHandleMouseUp);
-      }
-    }
-  }, {
-    key: "calculateFractionalPosition",
-    value: function calculateFractionalPosition(realContentSize, containerSize, contentPosition) {
-      var relativeSize = realContentSize - containerSize;
-      return 1 - (relativeSize - contentPosition) / relativeSize;
-    }
-  }, {
-    key: "calculateState",
-    value: function calculateState(props) {
-      var fractionalPosition = this.calculateFractionalPosition(props.realSize, props.containerSize, props.position);
-      var proportionalToPageScrollSize = props.containerSize * props.containerSize / props.realSize;
-      var scrollSize = proportionalToPageScrollSize < props.minScrollSize ? props.minScrollSize : proportionalToPageScrollSize;
-      var scrollPosition = (props.containerSize - scrollSize) * fractionalPosition;
-      return {
-        scrollSize: scrollSize,
-        position: Math.round(scrollPosition)
-      };
-    }
-  }, {
-    key: "render",
-    value: function render() {
-      var _this2 = this;
-
-      var s = this.props.ss;
-      var _this$props = this.props,
-          isDragging = _this$props.isDragging,
-          type = _this$props.type,
-          scrollbarStyle = _this$props.scrollbarStyle,
-          containerStyle = _this$props.containerStyle;
-      var isVoriziontal = type === "horizontal";
-      var isVertical = type === "vertical";
-      var scrollStyles = this.createScrollStyles();
-      return React.createElement("div", {
-        className: classnames(s.scrollbar_container, isDragging && s.active, isVoriziontal && s.horizontal, isVertical && s.vertical),
-        style: containerStyle,
-        onMouseDown: this.handleScrollBarContainerClick,
-        ref: function ref(x) {
-          return _this2.scrollbarContainer = x;
-        }
-      }, React.createElement("div", {
-        className: s.scrollbar,
-        style: _objectSpread({}, scrollbarStyle, scrollStyles),
-        onMouseDown: this.handleMouseDown
-      }));
-    }
-  }, {
-    key: "handleMouseMoveForHorizontal",
-    value: function handleMouseMoveForHorizontal(e) {
-      var multiplier = this.computeMultiplier();
-
-      if (this.state.isDragging) {
-        e.preventDefault();
-        var deltaX = this.state.lastClientPosition - e.clientX;
-        this.setState({
-          lastClientPosition: e.clientX
-        });
-        this.props.onMove(0, deltaX / multiplier);
-      }
-    }
-  }, {
-    key: "handleMouseMoveForVertical",
-    value: function handleMouseMoveForVertical(e) {
-      var multiplier = this.computeMultiplier();
-
-      if (this.state.isDragging) {
-        e.preventDefault();
-        var deltaY = this.state.lastClientPosition - e.clientY;
-        this.setState({
-          lastClientPosition: e.clientY
-        });
-        this.props.onMove(deltaY / multiplier, 0);
-      }
-    }
-  }, {
-    key: "handleMouseUp",
-    value: function handleMouseUp(e) {
-      if (this.state.isDragging) {
-        e.preventDefault();
-        this.setState({
-          isDragging: false
-        });
-      }
-    }
-  }, {
-    key: "createScrollStyles",
-    value: function createScrollStyles() {
-      if (this.props.type === "vertical") {
-        return {
-          height: this.state.scrollSize,
-          marginTop: this.state.position
-        };
-      } else {
-        return {
-          width: this.state.scrollSize,
-          marginLeft: this.state.position
-        };
-      }
-    }
-  }, {
-    key: "computeMultiplier",
-    value: function computeMultiplier() {
-      return this.props.containerSize / this.props.realSize;
-    }
-  }, {
-    key: "isVertical",
-    value: function isVertical() {
-      return this.props.type === "vertical";
-    }
-  }]);
-
-  return ScrollBar;
-}(React.Component);
-
-ScrollBar$1.propTypes = {
-  onMove: PropTypes.func,
-  onPositionChange: PropTypes.func,
-  onFocus: PropTypes.func,
-  realSize: PropTypes.number,
-  containerSize: PropTypes.number,
-  position: PropTypes.number,
-  containerStyle: PropTypes.object,
-  scrollbarStyle: PropTypes.object,
-  type: PropTypes.oneOf(["vertical", "horizontal"]),
-  ownerDocument: PropTypes.any,
-  minScrollSize: PropTypes.number
-};
-ScrollBar$1.defaultProps = {
-  type: "vertical"
+  type: "vertical",
+  ss: s$1
 };
 
 var eventTypes = {
@@ -3617,7 +3391,7 @@ function (_React$Component) {
           className = _this$props.className,
           contentClassName = _this$props.contentClassName,
           ownerDocument = _this$props.ownerDocument;
-      var scrollbarY = this.canScrollY() ? React.createElement(ScrollBar$1, {
+      var scrollbarY = this.canScrollY() ? React.createElement(ScrollBar, {
         ownerDocument: ownerDocument,
         realSize: this.state.realHeight,
         containerSize: this.state.containerHeight,
@@ -3630,7 +3404,7 @@ function (_React$Component) {
         onFocus: this.focusContent,
         type: "vertical"
       }) : null;
-      var scrollbarX = this.canScrollX() ? React.createElement(ScrollBar$1, {
+      var scrollbarX = this.canScrollX() ? React.createElement(ScrollBar, {
         ownerDocument: ownerDocument,
         realSize: this.state.realWidth,
         containerSize: this.state.containerWidth,
@@ -3643,8 +3417,6 @@ function (_React$Component) {
         onFocus: this.focusContent.bind(this),
         type: "horizontal"
       }) : null;
-      var classes = "scrollarea " + (className || "");
-      var contentClasses = "scrollarea-content " + (contentClassName || "");
       var contentStyle = {
         marginTop: -this.state.topPosition,
         marginLeft: -this.state.leftPosition
@@ -3653,7 +3425,7 @@ function (_React$Component) {
         ref: function ref(x) {
           return _this2.wrapper = x;
         },
-        className: classes,
+        className: classnames(this.props.ss.scrollarea, className),
         style: this.props.style,
         onWheel: this.handleWheel.bind(this)
       }, React.createElement("div", {
@@ -3661,7 +3433,7 @@ function (_React$Component) {
           return _this2.content = x;
         },
         style: _objectSpread({}, this.props.contentStyle, contentStyle),
-        className: contentClasses,
+        className: classnames(this.props.ss.scrollarea_content, contentClassName),
         onTouchStart: this.handleTouchStart.bind(this),
         onTouchMove: this.handleTouchMove.bind(this),
         onTouchEnd: this.handleTouchEnd.bind(this),
@@ -3907,7 +3679,8 @@ ScrollArea.propTypes = {
   minScrollSize: PropTypes.number,
   swapWheelAxes: PropTypes.bool,
   stopScrollPropagation: PropTypes.bool,
-  focusableTabIndex: PropTypes.number
+  focusableTabIndex: PropTypes.number,
+  s: PropTypes.object
 };
 ScrollArea.defaultProps = {
   speed: 1,
@@ -3917,10 +3690,243 @@ ScrollArea.defaultProps = {
   swapWheelAxes: false,
   contentWindow: (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" ? window : undefined,
   ownerDocument: (typeof document === "undefined" ? "undefined" : _typeof(document)) === "object" ? document : undefined,
-  focusableTabIndex: 1
+  focusableTabIndex: 1,
+  ss: s$1
 };
 
-var s$1 = {"scrollarea_content":"list_scrollarea_content__174Eh","scrollarea":"list_scrollarea__2PpSO","scrollbar_container":"list_scrollbar_container__1mUtL","horizontal":"list_horizontal__1jHED","scrollbar":"list_scrollbar__Nxbsi","vertical":"list_vertical__1Gnyy","active":"list_active__3078D","sitcontrol_list":"list_sitcontrol_list__1jWGO","sitcontrol_selected":"list_sitcontrol_selected__2ljGV"};
+function Selection(props) {}
+
+Selection.defaultProps = {
+  mode: "single"
+};
+Selection.propTypes = {
+  mode: PropTypes.oneOf(["single", "multiple"]),
+  onBeforeChange: PropTypes.func,
+  onChange: PropTypes.func,
+  selected: PropTypes.array
+};
+
+var ScrollBar$1 =
+/*#__PURE__*/
+function (_React$Component) {
+  _inherits(ScrollBar, _React$Component);
+
+  function ScrollBar(props) {
+    var _this;
+
+    _classCallCheck(this, ScrollBar);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(ScrollBar).call(this, props));
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "handleScrollBarContainerClick", function (e) {
+      e.preventDefault();
+
+      var multiplier = _this.computeMultiplier();
+
+      var clientPosition = _this.isVertical() ? e.clientY : e.clientX;
+
+      var _this$scrollbarContai = _this.scrollbarContainer.getBoundingClientRect(),
+          top = _this$scrollbarContai.top,
+          left = _this$scrollbarContai.left;
+
+      var clientScrollPosition = _this.isVertical() ? top : left;
+      var position = clientPosition - clientScrollPosition;
+      var proportionalToPageScrollSize = _this.props.containerSize * _this.props.containerSize / _this.props.realSize;
+
+      _this.setState({
+        isDragging: true,
+        lastClientPosition: clientPosition
+      });
+
+      _this.props.onPositionChange((position - proportionalToPageScrollSize / 2) / multiplier);
+    });
+
+    _defineProperty(_assertThisInitialized(_assertThisInitialized(_this)), "handleMouseDown", function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var lastClientPosition = _this.isVertical() ? e.clientY : e.clientX;
+
+      _this.setState({
+        isDragging: true,
+        lastClientPosition: lastClientPosition
+      });
+
+      _this.props.onFocus();
+    });
+
+    var newState = _this.calculateState(props);
+
+    _this.state = {
+      position: newState.position,
+      scrollSize: newState.scrollSize,
+      isDragging: false,
+      lastClientPosition: 0
+    };
+
+    if (props.type === "vertical") {
+      _this.bindedHandleMouseMove = _this.handleMouseMoveForVertical.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    } else {
+      _this.bindedHandleMouseMove = _this.handleMouseMoveForHorizontal.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    }
+
+    _this.bindedHandleMouseUp = _this.handleMouseUp.bind(_assertThisInitialized(_assertThisInitialized(_this)));
+    return _this;
+  }
+
+  _createClass(ScrollBar, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      if (this.props.ownerDocument) {
+        this.props.ownerDocument.addEventListener("mousemove", this.bindedHandleMouseMove);
+        this.props.ownerDocument.addEventListener("mouseup", this.bindedHandleMouseUp);
+      }
+    }
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      this.setState(this.calculateState(nextProps));
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      if (this.props.ownerDocument) {
+        this.props.ownerDocument.removeEventListener("mousemove", this.bindedHandleMouseMove);
+        this.props.ownerDocument.removeEventListener("mouseup", this.bindedHandleMouseUp);
+      }
+    }
+  }, {
+    key: "calculateFractionalPosition",
+    value: function calculateFractionalPosition(realContentSize, containerSize, contentPosition) {
+      var relativeSize = realContentSize - containerSize;
+      return 1 - (relativeSize - contentPosition) / relativeSize;
+    }
+  }, {
+    key: "calculateState",
+    value: function calculateState(props) {
+      var fractionalPosition = this.calculateFractionalPosition(props.realSize, props.containerSize, props.position);
+      var proportionalToPageScrollSize = props.containerSize * props.containerSize / props.realSize;
+      var scrollSize = proportionalToPageScrollSize < props.minScrollSize ? props.minScrollSize : proportionalToPageScrollSize;
+      var scrollPosition = (props.containerSize - scrollSize) * fractionalPosition;
+      return {
+        scrollSize: scrollSize,
+        position: Math.round(scrollPosition)
+      };
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      var s = this.props.ss;
+      var _this$props = this.props,
+          isDragging = _this$props.isDragging,
+          type = _this$props.type,
+          scrollbarStyle = _this$props.scrollbarStyle,
+          containerStyle = _this$props.containerStyle;
+      var isVoriziontal = type === "horizontal";
+      var isVertical = type === "vertical";
+      var scrollStyles = this.createScrollStyles();
+      return React.createElement("div", {
+        className: classnames(s.scrollbar_container, isDragging && s.active, isVoriziontal && s.horizontal, isVertical && s.vertical),
+        style: containerStyle,
+        onMouseDown: this.handleScrollBarContainerClick,
+        ref: function ref(x) {
+          return _this2.scrollbarContainer = x;
+        }
+      }, React.createElement("div", {
+        className: s.scrollbar,
+        style: _objectSpread({}, scrollbarStyle, scrollStyles),
+        onMouseDown: this.handleMouseDown
+      }));
+    }
+  }, {
+    key: "handleMouseMoveForHorizontal",
+    value: function handleMouseMoveForHorizontal(e) {
+      var multiplier = this.computeMultiplier();
+
+      if (this.state.isDragging) {
+        e.preventDefault();
+        var deltaX = this.state.lastClientPosition - e.clientX;
+        this.setState({
+          lastClientPosition: e.clientX
+        });
+        this.props.onMove(0, deltaX / multiplier);
+      }
+    }
+  }, {
+    key: "handleMouseMoveForVertical",
+    value: function handleMouseMoveForVertical(e) {
+      var multiplier = this.computeMultiplier();
+
+      if (this.state.isDragging) {
+        e.preventDefault();
+        var deltaY = this.state.lastClientPosition - e.clientY;
+        this.setState({
+          lastClientPosition: e.clientY
+        });
+        this.props.onMove(deltaY / multiplier, 0);
+      }
+    }
+  }, {
+    key: "handleMouseUp",
+    value: function handleMouseUp(e) {
+      if (this.state.isDragging) {
+        e.preventDefault();
+        this.setState({
+          isDragging: false
+        });
+      }
+    }
+  }, {
+    key: "createScrollStyles",
+    value: function createScrollStyles() {
+      if (this.props.type === "vertical") {
+        return {
+          height: this.state.scrollSize,
+          marginTop: this.state.position
+        };
+      } else {
+        return {
+          width: this.state.scrollSize,
+          marginLeft: this.state.position
+        };
+      }
+    }
+  }, {
+    key: "computeMultiplier",
+    value: function computeMultiplier() {
+      return this.props.containerSize / this.props.realSize;
+    }
+  }, {
+    key: "isVertical",
+    value: function isVertical() {
+      return this.props.type === "vertical";
+    }
+  }]);
+
+  return ScrollBar;
+}(React.Component);
+
+ScrollBar$1.propTypes = {
+  onMove: PropTypes.func,
+  onPositionChange: PropTypes.func,
+  onFocus: PropTypes.func,
+  realSize: PropTypes.number,
+  containerSize: PropTypes.number,
+  position: PropTypes.number,
+  containerStyle: PropTypes.object,
+  scrollbarStyle: PropTypes.object,
+  type: PropTypes.oneOf(["vertical", "horizontal"]),
+  ownerDocument: PropTypes.any,
+  minScrollSize: PropTypes.number,
+  ss: PropTypes.object
+};
+ScrollBar$1.defaultProps = {
+  type: "vertical",
+  ss: s$1
+};
+
+var s1 = {"sitcontrol_list":"list_sitcontrol_list__1jWGO","sitcontrol_selected":"list_sitcontrol_selected__2ljGV"};
 
 var _List$defaultProps, _List$propTypes;
 
@@ -3947,7 +3953,8 @@ function (_ScrollArea) {
           style: {
             height: _this.props.rowHeight
           },
-          s: s$1
+          selected: !!_this.state.selected[i],
+          ss: _this.props.ss
         });
 
         items.push(item);
@@ -4059,7 +4066,8 @@ function (_ScrollArea) {
       var _this$props = this.props,
           className = _this$props.className,
           contentClassName = _this$props.contentClassName,
-          ownerDocument = _this$props.ownerDocument;
+          ownerDocument = _this$props.ownerDocument,
+          ss = _this$props.ss;
       var withMotion = false;
       var contentStyle = {
         marginTop: -this.state.topPosition,
@@ -4071,7 +4079,7 @@ function (_ScrollArea) {
         ref: function ref(x) {
           return _this2.wrapper = x;
         },
-        className: classnames(s$1.scrollarea, className),
+        className: classnames(ss.scrollarea, className),
         style: this.props.style,
         onWheel: this.handleWheel.bind(this)
       }, containerProps), React.createElement("div", {
@@ -4081,7 +4089,7 @@ function (_ScrollArea) {
         style: _objectSpread({
           height: this.state.realHeight
         }, this.props.contentStyle, contentStyle),
-        className: classnames(s$1.sitcontrol_list, s$1.scrollarea_content),
+        className: classnames(ss.sitcontrol_list, ss.scrollarea_content),
         onTouchStart: this.handleTouchStart.bind,
         onTouchMove: this.handleTouchMove.bind,
         onTouchEnd: this.handleTouchEnd.bind,
@@ -4096,7 +4104,7 @@ function (_ScrollArea) {
         style: {
           padding: 0
         }
-      }), this.itemsRenderer(from, to)), this.canScrollY() && React.createElement(ScrollBar, {
+      }), this.itemsRenderer(from, to)), this.canScrollY() && React.createElement(ScrollBar$1, {
         ownerDocument: ownerDocument,
         realSize: this.state.realHeight,
         containerSize: this.state.containerHeight,
@@ -4108,8 +4116,7 @@ function (_ScrollArea) {
         smoothScrolling: withMotion,
         minScrollSize: this.props.minScrollSize,
         onFocus: this.focusContent,
-        type: "vertical",
-        ss: s$1
+        type: "vertical"
       }));
     }
   }, {
@@ -4119,13 +4126,7 @@ function (_ScrollArea) {
     key: "getDerivedStateFromProps",
     value: function getDerivedStateFromProps(props, prevstate) {
       var newstate = {};
-
-      if (prevstate.data !== props.data) {
-        newstate.data = props.data;
-        newstate.realHeight = props.data.length * props.rowHeight;
-        if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
-      }
-
+      if (prevstate.data !== props.data) newstate.data = props.data;
       React.Children.map(props.children, function (child) {
         if (child.type === Selection) {
           if (child.props.selected) newstate.selected = child.props.selected;
@@ -4137,6 +4138,8 @@ function (_ScrollArea) {
           }
         }
       });
+      newstate.realHeight = props.data.length * props.rowHeight;
+      if (newstate.realHeight <= prevstate.topPosition) newstate.topPosition = 0;
       return newstate;
     }
   }]);
@@ -4147,31 +4150,27 @@ function (_ScrollArea) {
 List.itemRenderer = function (_ref2) {
   var index = _ref2.index,
       key = _ref2.key,
-      style = _ref2.style;
-  var o = this.state.data[index]; //const picked = this.state.pickedIndex === index;
-  //const selected = this.state.value === o[this.props.valueField];
-
-  var selected = !!this.state.selected[index];
-  console.log(selected);
+      style = _ref2.style,
+      selected = _ref2.selected;
+  var o = this.state.data[index];
   return React.createElement("div", {
     className: classnames("sitcontrol_list_item", selected && "sitcontrol_selected"),
     "data-index": index,
     key: key,
     style: style,
     onClick: this.clickHandler,
-    onTouchEnd: this.clickHandler,
-    draggable: this.props.draggable
+    onTouchEnd: this.clickHandler
   }, o[this.props.labelField]);
 };
 
 List.defaultProps = (_List$defaultProps = {
   data: [],
   labelField: "label"
-}, _defineProperty(_List$defaultProps, "data", []), _defineProperty(_List$defaultProps, "draggable", false), _defineProperty(_List$defaultProps, "droppable", false), _defineProperty(_List$defaultProps, "itemRenderer", List.itemRenderer), _defineProperty(_List$defaultProps, "rowHeight", 30), _defineProperty(_List$defaultProps, "speed", 1), _defineProperty(_List$defaultProps, "vertical", true), _defineProperty(_List$defaultProps, "horizontal", true), _defineProperty(_List$defaultProps, "smoothScrolling", false), _defineProperty(_List$defaultProps, "swapWheelAxes", false), _defineProperty(_List$defaultProps, "contentWindow", (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" ? window : undefined), _defineProperty(_List$defaultProps, "ownerDocument", (typeof document === "undefined" ? "undefined" : _typeof(document)) === "object" ? document : undefined), _defineProperty(_List$defaultProps, "focusableTabIndex", 1), _List$defaultProps);
+}, _defineProperty(_List$defaultProps, "data", []), _defineProperty(_List$defaultProps, "draggable", false), _defineProperty(_List$defaultProps, "droppable", false), _defineProperty(_List$defaultProps, "itemRenderer", List.itemRenderer), _defineProperty(_List$defaultProps, "rowHeight", 30), _defineProperty(_List$defaultProps, "speed", 1), _defineProperty(_List$defaultProps, "vertical", true), _defineProperty(_List$defaultProps, "horizontal", true), _defineProperty(_List$defaultProps, "smoothScrolling", false), _defineProperty(_List$defaultProps, "swapWheelAxes", false), _defineProperty(_List$defaultProps, "contentWindow", (typeof window === "undefined" ? "undefined" : _typeof(window)) === "object" ? window : undefined), _defineProperty(_List$defaultProps, "ownerDocument", (typeof document === "undefined" ? "undefined" : _typeof(document)) === "object" ? document : undefined), _defineProperty(_List$defaultProps, "focusableTabIndex", 1), _defineProperty(_List$defaultProps, "ss", _objectSpread({}, s1, s$1)), _List$defaultProps);
 List.propTypes = (_List$propTypes = {
   data: PropTypes.array,
   labelField: PropTypes.string
-}, _defineProperty(_List$propTypes, "data", PropTypes.array), _defineProperty(_List$propTypes, "draggable", PropTypes.bool), _defineProperty(_List$propTypes, "droppable", PropTypes.bool), _defineProperty(_List$propTypes, "itemRenderer", PropTypes.func), _defineProperty(_List$propTypes, "rowHeight", PropTypes.number), _List$propTypes);
+}, _defineProperty(_List$propTypes, "data", PropTypes.array), _defineProperty(_List$propTypes, "draggable", PropTypes.bool), _defineProperty(_List$propTypes, "droppable", PropTypes.bool), _defineProperty(_List$propTypes, "itemRenderer", PropTypes.func), _defineProperty(_List$propTypes, "rowHeight", PropTypes.number), _defineProperty(_List$propTypes, "ss", PropTypes.object), _List$propTypes);
 
 var Input =
 /*#__PURE__*/
@@ -4481,5 +4480,5 @@ var faClock$1 = {
 
 library.add(faCheck, faPencilAlt, faClock$1);
 
-export { Select as CSelect, Calendar, DatePicker, Clock, DateTimePicker, List, Selection, Input, NumberInput };
+export { Select as CSelect, Calendar, DatePicker, Clock, DateTimePicker, ScrollArea, List, Selection, Input, NumberInput };
 //# sourceMappingURL=index.module.js.map
