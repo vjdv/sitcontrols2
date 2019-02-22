@@ -67,7 +67,7 @@ class List extends ScrollArea {
     const items = [];
     var count = 0;
     for (var i = from; i <= to; i++) {
-      const item = this.itemRenderer({ index: i, key: count, style: { height: this.props.rowHeight }, selected: !!this.state.selected[i], ss: this.props.ss });
+      const item = this.itemRenderer({ index: i, key: count, style: { height: this.props.rowHeight }, selected: !!this.selected_obj[i], ss: this.props.ss });
       items.push(item);
       count++;
     }

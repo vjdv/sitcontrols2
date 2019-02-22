@@ -3953,7 +3953,7 @@ function (_ScrollArea) {
           style: {
             height: _this.props.rowHeight
           },
-          selected: !!_this.state.selected[i],
+          selected: !!_this.selected_obj[i],
           ss: _this.props.ss
         });
 
